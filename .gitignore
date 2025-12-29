@@ -1,0 +1,10 @@
+node_modules/
+dist/
+.vite/
+.tanstack/
+.env*
+.env.*   # catches .env.local, .env.production, etc.
+*.log
+.vscode/
+.cta.json
+.cursorrules
