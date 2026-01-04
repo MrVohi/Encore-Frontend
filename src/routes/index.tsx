@@ -44,8 +44,8 @@ function Home() {
   }, [])
 
   return (
-    <div className="min-h-screen bg-[#282c34] text-white flex items-start justify-center p-10">
-      <div className="w-full max-w-5xl">
+    <div className="pt-25 min-h-screen bg-[#282c34] text-white flex items-start justify-center p-10">
+      <div className="mx-auto w-full max-w-5xl">
         <h1 className="text-2xl font-bold mb-6">Artists</h1>
 
         {loading && <p>Loading…</p>}
