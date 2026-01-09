@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { type Artist, ArtistCard } from '../components/artist'
+import { type Artist, ArtistCard, ArtistPopup } from '../components/artist'
 
 export const Route = createFileRoute('/')({
   component: Home,
@@ -10,6 +10,7 @@ function Home() {
   const [artists, setArtists] = useState<Artist[]>([])
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [selected, setSelected] = useState<Artist | null>(null)
 
   useEffect(() => {
     const controller = new AbortController()
@@ -54,10 +55,11 @@ function Home() {
         {!loading && !error && (
           <div className="flex flex-wrap gap-6">
             {artists.map((a) => (
-              <ArtistCard key={a.id} artist={a} />
+              <ArtistCard key={a.id} artist={a} onClick={() => setSelected(a)} />
             ))}
           </div>
         )}
+        <ArtistPopup artist={selected} open={selected !== null} onClose={() => setSelected(null)} />
       </div>
     </div>
   )
