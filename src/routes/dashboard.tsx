@@ -1,4 +1,3 @@
-import React from 'react';
 import { useAuth } from '../integrations/auth-context';
 import { useNavigate } from 'react-router-dom';
 
