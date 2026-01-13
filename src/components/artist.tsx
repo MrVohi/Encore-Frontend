@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { type Album, AlbumCard } from "./albums"
+import { type Concert, ConcertCard } from "./concerts"
 
 export type Artist = {
   id: string
@@ -55,11 +56,17 @@ export function ArtistBackCard({
   albums,
   albumsLoading,
   albumsError,
+  concerts,
+  concertsLoading,
+  concertsError,
 }: {
   artist: Artist
   albums: Album[]
   albumsLoading: boolean
   albumsError: string | null
+  concerts: Concert[]
+  concertsLoading: boolean
+  concertsError: string | null
 }) {
   return (
     <div className="text-left bg-white/5 rounded-lg p-4 w-[280px] h-full">
@@ -82,7 +89,21 @@ export function ArtistBackCard({
           </div>
         )}
 
-        {/* TODO later: concerts / tickets sections */}
+
+        <div className="opacity-60">Concerts:</div>
+        {concertsLoading && <div className="opacity-60">Loading concerts…</div>}
+        {concertsError && <div className="text-red-300">Error: {concertsError}</div>}
+
+        {!concertsLoading && !concertsError && (
+          <div className="space-y-2 max-h-56 overflow-auto pr-1">
+            {concerts.length ? (
+              concerts.map((c) => <ConcertCard key={c.id} concert={c} />)
+            ) : (
+              <div className="opacity-60">No concerts</div>
+            )}
+          </div>
+        )}
+        {/* TODO later: tickets sections */}
       </div>
     </div>
   )
@@ -90,6 +111,12 @@ export function ArtistBackCard({
 
 async function fetchAlbumsForArtist(artistId: string, signal: AbortSignal): Promise<Album[]> {
   const res = await fetch(`http://localhost:8080/api/artists/${artistId}/albums`, { signal })
+  if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  return res.json()
+}
+
+async function fetchConcertsForArtist(artistId: string, signal: AbortSignal): Promise<Concert[]> {
+  const res = await fetch(`http://localhost:8080/api/artists/${artistId}/concerts`, { signal })
   if (!res.ok) throw new Error(`HTTP ${res.status}`)
   return res.json()
 }
@@ -108,6 +135,10 @@ export function ArtistPopup({
   const [albums, setAlbums] = useState<Album[]>([])
   const [albumsLoading, setAlbumsLoading] = useState(false)
   const [albumsError, setAlbumsError] = useState<string | null>(null)
+
+  const [concerts, setConcerts] = useState<Concert[]>([])
+  const [concertsLoading, setConcertsLoading] = useState(false)
+  const [concertsError, setConcertsError] = useState<string | null>(null)
 
   useEffect(() => {
     if (open) setReturned(false)
@@ -128,6 +159,25 @@ export function ArtistPopup({
         setAlbumsError(e?.message ?? "Failed to load albums")
       })
       .finally(() => setAlbumsLoading(false))
+
+    return () => ac.abort()
+  }, [open, artist?.id])
+
+  useEffect(() => {
+    if (!open || !artist) return
+
+    const ac = new AbortController()
+    setConcertsLoading(true)
+    setConcertsError(null)
+    setConcerts([])
+
+    fetchConcertsForArtist(artist.id, ac.signal)
+      .then((data) => setConcerts(data))
+      .catch((e) => {
+        if (e?.name === "AbortError") return
+        setConcertsError(e?.message ?? "Failed to load concerts")
+      })
+      .finally(() => setConcertsLoading(false))
 
     return () => ac.abort()
   }, [open, artist?.id])
@@ -171,6 +221,9 @@ export function ArtistPopup({
               albums={albums}
               albumsLoading={albumsLoading}
               albumsError={albumsError}
+              concerts={concerts}
+              concertsLoading={concertsLoading}
+              concertsError={concertsError}
             />
           ) : (
             <ArtistCard artist={artist} />

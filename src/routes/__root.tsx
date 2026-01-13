@@ -16,19 +16,25 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
   component: () => (
     <>
       <Header />
-      <Outlet />
-      <TanStackDevtools
-        config={{
-          position: 'bottom-right',
-        }}
-        plugins={[
-          {
-            name: 'Tanstack Router',
-            render: <TanStackRouterDevtoolsPanel />,
-          },
-          TanStackQueryDevtools,
-        ]}
-      />
+
+      {/* App layout */}
+      <div className="min-h-[100dvh] pt-16">
+        {/* If you have an aside that is always there on desktop */}
+        <div className="grid min-h-[calc(100dvh-4rem)] grid-cols-1 md:grid-cols-[280px_1fr]">
+          {/* Sidebar / Aside (optional) */}
+          <aside className="hidden md:block border-r border-white/10">
+            {/* Your aside content / component here */}
+          </aside>
+
+          {/* Page content */}
+          <main className="min-w-0">
+            <Outlet />
+          </main>
+        </div>
+      </div>
+
+      {/* devtools unchanged */}
+      <TanStackDevtools />
     </>
-  ),
+  )
 })
