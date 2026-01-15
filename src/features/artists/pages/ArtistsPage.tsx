@@ -74,7 +74,7 @@ export default function ArtistsPage() {
     return (
         <div className="pt-20 min-h-screen bg-background text-foreground flex items-start justify-center overflow-x-hidden">
             <div className="mx-auto w-full max-w-3xl px-5">
-                <div className="mb-6 flex items-center">
+                <div className="mb-6 flex items-center justify-between">
                     <h1 className="text-2xl font-bold">Artists</h1>
                     <div>
                         <ButtonIcon onClick={() => setFilterOpen(true)} />
