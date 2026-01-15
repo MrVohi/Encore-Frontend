@@ -222,9 +222,13 @@ code {
 
 @layer utilities {
   .brutal {
-    position: relative;
-    box-shadow: 4px 4px 0 var(--border);
+    border: 3px solid hsl(var(--border));
+    box-shadow: 4px 4px 0 hsl(var(--border));
   }
+  .brutal-sm {
+    border: 3px solid hsl(var(--border));
+    box-shadow: 3px 3px 0 hsl(var(--border));
+  }  
 
   /* real-looking border without affecting layout */
   .brutal::before {
