@@ -246,3 +246,34 @@ code {
     box-shadow: 6px 6px 0 var(--border);
   }
 }
+
+/* --- Encore MapLibre skin --- */
+.encore-map .maplibregl-popup-content {
+  padding: 0 !important;
+  border: 3px solid hsl(var(--border));
+  border-radius: 12px;
+  background: hsl(var(--card));
+  color: hsl(var(--card-foreground));
+  box-shadow: 6px 6px 0 hsl(var(--border));
+}
+
+.encore-map .maplibregl-popup-tip {
+  display: none;
+}
+
+.encore-map .maplibregl-popup-close-button {
+  top: 6px;
+  right: 6px;
+  width: 30px;
+  height: 30px;
+  border: 3px solid hsl(var(--border));
+  border-radius: 999px;
+  background: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+  font-weight: 900;
+  box-shadow: 3px 3px 0 hsl(var(--border));
+}
+
+.encore-map .maplibregl-popup-close-button:hover {
+  transform: translateY(-1px);
+}

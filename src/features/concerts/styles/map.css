@@ -1,0 +1,25 @@
+/* Popups */
+.encore-map .maplibregl-popup-content {
+    background: var(--card);
+    color: var(--card-foreground);
+    border: 3px solid var(--border);
+    box-shadow: 4px 4px 0 var(--border);
+    border-radius: 14px;
+    padding: 0;
+    /* let ConcertCard handle padding */
+}
+
+.encore-map .maplibregl-popup-tip {
+    border-top-color: var(--border) !important;
+}
+
+.encore-map .maplibregl-popup-close-button {
+    font-weight: 900;
+    padding: 6px 10px;
+    color: var(--muted-foreground);
+}
+
+.encore-map .maplibregl-popup-close-button:hover {
+    background: transparent;
+    color: var(--foreground);
+}
