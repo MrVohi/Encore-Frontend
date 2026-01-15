@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
-import { type Artist, ArtistCard } from '../components/artist'
+import type { Artist } from '@/types/artist'
+import { listArtists } from "@/services/artists"
+import ArtistCard from '@/features/artists/components/ArtistCard'
 import { Ripple } from '../components/ui/ripple'
 import {
   Carousel,
@@ -19,24 +21,15 @@ function Home() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    const controller = new AbortController()
 
+  useEffect(() => {
+    const ac = new AbortController()
     async function load() {
       try {
         setLoading(true)
         setError(null)
-
-        const res = await fetch('http://localhost:8080/api/artists', {
-          signal: controller.signal,
-        })
-
-        if (!res.ok) throw new Error(`HTTP ${res.status}`)
-
-        const json = await res.json()
-
+        const json = await listArtists(ac.signal)
         if (!Array.isArray(json)) throw new Error('Unexpected response (not an array)')
-
         setArtists(json as Artist[])
       } catch (e) {
         if (e instanceof DOMException && e.name === 'AbortError') return
@@ -46,9 +39,8 @@ function Home() {
         setLoading(false)
       }
     }
-
     load()
-    return () => controller.abort()
+    return () => ac.abort()
   }, [])
 
   return (
@@ -56,33 +48,37 @@ function Home() {
       <div className="mx-auto w-full max-w-3xl px-5">
         <h1 className="text-2xl font-bold mb-6">Artists</h1>
 
-    {loading && <p>Loading…</p>}
-    {error && <p className="text-red-300">Error: {error}</p>}
+        {loading && <p>Loading…</p>}
+        {error && <p className="text-red-300">Error: {error}</p>}
 
-    {!loading && !error && (
-      <div className="py-4">
-        <Carousel className="w-full" opts={{ align: "start" }}>
-          <CarouselContent className="-ml-4">
-            {artists.map((a, i) => (
-              <CarouselItem
-                key={a.id}
-                className="pl-4 shrink-0 basis-full sm:basis-1/2 lg:basis-1/3"
-              >
-                {/* GUTTER: keeps hover lift + shadow from getting clipped */}
-                <div className="pt-4 pl-4 pr-2 pb-6">
-                  <ArtistCard artist={a} index={i} showCreated={false} />
-                </div>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
+        {!loading && !error && (
+          <div className="py-4">
+            <Carousel className="w-full" opts={{ align: "start" }}>
+              <CarouselContent className="-ml-4">
+                {artists.map((a, i) => (
+                  <CarouselItem
+                    key={a.id}
+                    className="pl-4 shrink-0 basis-full sm:basis-1/2 lg:basis-1/3"
+                  >
+                    {/* GUTTER: keeps hover lift + shadow from getting clipped */}
+                    <div className="pt-4 pl-4 pr-2 pb-6">
+                      <ArtistCard artist={a} index={i} onClick={async () => {
+                        const { setSelectedArtist } = await import('@/features/artists/state/selected')
+                        setSelectedArtist(a)
+                      }} />
+                    </div>
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
 
-          <CarouselPrevious />
-          <CarouselNext />
-        </Carousel>
-      </div>
+              <CarouselPrevious />
+              <CarouselNext />
+            </Carousel>
+          </div>
         )}
+        {/* ArtistPopup mounted once at app root */}
       </div>
-      <Ripple 
+      <Ripple
         mainCircleSize={250}
         mainCircleOpacity={0.35}
         numCircles={15}
