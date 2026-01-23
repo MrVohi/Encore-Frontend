@@ -7,7 +7,7 @@ export default function VerifyEmail() {
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading')
   const [message, setMessage] = useState('')
 
-  // Récupérer le token depuis l'URL
+  
   const searchParams = new URLSearchParams(window.location.search)
   const token = searchParams.get('token')
 
