@@ -1,5 +1,5 @@
 import axios from 'axios';
-import type { AuthResponse, LoginData, RegisterData } from './auth-types';
+import type { AuthResponse, LoginData, RegisterData, User } from './auth-types';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
 
@@ -96,6 +96,19 @@ export const authService = {
   getCurrentUser: async () => {
     const response = await api.get('/me');
     return response.data;
+  },
+
+  setAccessToken(token: string | null) {
+    if (token) {
+      api.defaults.headers.common.Authorization = `Bearer ${token}`
+    } else {
+      delete api.defaults.headers.common.Authorization
+    }
+  },
+
+  async me(): Promise<User> {
+    const res = await api.get('/me')
+    return res.data
   },
 };
 

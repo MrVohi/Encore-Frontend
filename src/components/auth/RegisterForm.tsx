@@ -6,6 +6,7 @@ import ReCAPTCHA from 'react-google-recaptcha'
 
 export default function RegisterForm() {
   const [formData, setFormData] = useState({
+    username: '',
     email: '',
     password: '',
     confirmPassword: '',
@@ -53,11 +54,13 @@ export default function RegisterForm() {
     try {
       await register({
         email: formData.email,
+        username: formData.username,
         password: formData.password,
         first_name: formData.first_name,
         last_name: formData.last_name,
         recaptcha_token: recaptchaToken,
       })
+
       navigate({ to: '/' })
     } catch (err: any) {
       setError(err.message)
@@ -114,6 +117,22 @@ export default function RegisterForm() {
                 />
               </div>
             </div>
+
+            <div>
+              <label htmlFor="username" className="block text-sm font-medium text-gray-300">
+                Nom d’utilisateur
+              </label>
+              <input
+                id="username"
+                name="username"
+                type="text"
+                required
+                value={formData.username}
+                onChange={handleChange}
+                className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-md"
+              />
+            </div>
+
 
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-300">

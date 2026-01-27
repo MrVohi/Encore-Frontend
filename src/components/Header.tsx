@@ -1,9 +1,10 @@
 import { Link } from '@tanstack/react-router'
+import { useAuth } from '@/integrations/auth-context'
 
 import { MapPinned, Heart, Home, Ticket } from 'lucide-react'
 
 export default function Header() {
-
+  const { logout } = useAuth()
 
   return (
     <>
@@ -18,7 +19,19 @@ export default function Header() {
           </Link>
         </h1>
         <h1 className="flex-1 flex items-center justify-center">Search Bar</h1>
-        <h1 className="flex-1 flex items-center justify-end">Profile Picture</h1>
+        <div className="flex-1 flex items-center justify-end gap-3">
+          <span className="text-sm text-gray-300">Profile</span>
+
+          <button
+            type="button"
+            onClick={logout}
+            className="inline-flex items-center justify-center rounded-md bg-red-600 px-3 py-2 text-sm font-medium text-white
+               hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 focus:ring-offset-2 focus:ring-offset-gray-800"
+          >
+            Logout
+          </button>
+        </div>
+
       </header>
 
       <aside
