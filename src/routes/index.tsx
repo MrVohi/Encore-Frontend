@@ -19,7 +19,10 @@ function Home() {
         setLoading(true)
         setError(null)
 
-        const res = await fetch('http://localhost:8080/api/artists', {
+        const apiUrl =
+          import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
+
+        const res = await fetch(`${apiUrl}/artists`, {
           signal: controller.signal,
         })
 
@@ -53,8 +56,8 @@ function Home() {
 
         {!loading && !error && (
           <div className="flex flex-wrap gap-6">
-            {artists.map((a) => (
-              <ArtistCard key={a.id} artist={a} />
+            {artists.map((artist) => (
+              <ArtistCard key={artist.id} artist={artist} />
             ))}
           </div>
         )}

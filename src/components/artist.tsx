@@ -4,28 +4,42 @@ export type Artist = {
   id: string
   name: string
   genre: string
-  image_url: string
-  preview_url: string
-  created_at: string 
+  image_url?: string
+  artwork_url?: string
+  preview_url?: string
+  created_at: string
 }
 
-export function ArtistCard({ artist }: { artist: Artist }) {
+export function ArtistCard({
+  artist,
+  onClick,
+}: {
+  artist: Artist
+  onClick?: () => void
+}) {
   const [imgOk, setImgOk] = useState(true)
 
-  const hasImageUrl =
-    artist.image_url !== 'None' && artist.image_url.trim() !== ''
+  const imageUrl = artist.artwork_url ?? artist.image_url ?? ''
+  const hasImageUrl = imageUrl !== 'None' && imageUrl.trim() !== ''
 
   const showImage = hasImageUrl && imgOk
   const createdDate = new Date(artist.created_at)
 
   return (
-    <div className="text-center bg-white/5 rounded-lg p-4 w-[280px]">
+    <div
+      className={[
+        'text-center bg-white/5 rounded-lg p-4 w-[280px]',
+        onClick ? 'cursor-pointer hover:bg-white/10 transition' : '',
+      ].join(' ')}
+      role={onClick ? 'button' : undefined}
+      onClick={onClick}
+    >
       {showImage && (
         <img
-          src={artist.image_url}
+          src={imageUrl}
           alt={artist.name}
           className="mx-auto w-40 h-40 object-cover rounded"
-          onError={() => setImgOk(false)} // hide image if URL is broken
+          onError={() => setImgOk(false)}
         />
       )}
 

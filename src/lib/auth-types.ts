@@ -1,10 +1,12 @@
 export interface User {
   id: string;
-  email: string;
+  email?: string;
+  mail?: string;
   first_name: string;
   last_name: string;
   is_email_verified: boolean;
   provider: string;
+  is_admin?: boolean;
   created_at: string;
 }
 

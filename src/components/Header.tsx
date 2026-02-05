@@ -4,18 +4,23 @@ import { useAuth } from '@/integrations/auth-context'
 import { MapPinned, Heart, Home, Ticket } from 'lucide-react'
 
 export default function Header() {
-  const { logout } = useAuth()
+  const { logout, user } = useAuth()
+  const logoSrc = ''
 
   return (
     <>
       <header className="fixed top-0 left-0 h-16 w-full p-4 flex items-center bg-gray-800 text-white shadow-lg basis-auto">
         <h1 className="ml-4 text-xl font-semibold flex-1 flex items-center justify-start">
           <Link to="/">
-            <img
-              src=""
-              alt="Encore Logo"
-              className="h-10"
-            />
+            {logoSrc ? (
+              <img
+                src={logoSrc}
+                alt="Encore Logo"
+                className="h-10"
+              />
+            ) : (
+              <span className="text-white">Encore</span>
+            )}
           </Link>
         </h1>
         <h1 className="flex-1 flex items-center justify-center">Search Bar</h1>
@@ -87,6 +92,21 @@ export default function Header() {
             <MapPinned size={20} />
             <span className="font-medium">Concerts Map</span>
           </Link>
+
+
+          {user?.is_admin && (
+            <Link
+              to="/admin-dashboard"
+              className="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-800 transition-colors mt-6"
+              activeProps={{
+                className:
+                  'flex items-center gap-3 p-3 rounded-lg bg-cyan-600 hover:bg-cyan-700 transition-colors mt-6',
+              }}
+            >
+              <Home size={20} />
+              <span className="font-medium">Admin Dashboard</span>
+            </Link>
+          )}
 
           {/* Placeholders end */}
         </nav>
