@@ -1,7 +1,8 @@
 import axios from 'axios';
 import type { AuthResponse, LoginData, RegisterData, User } from './auth-types';
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+export const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api';
+export const API_ORIGIN = API_URL.replace(/\/api\/?$/, '');
 
 const api = axios.create({
   baseURL: API_URL,
@@ -70,6 +71,32 @@ export const authService = {
 
   verifyEmail: async (token: string): Promise<void> => {
     await api.get(`/auth/verify-email?token=${token}`);
+  },
+
+  uploadAvatar: async (file: File): Promise<User> => {
+    const form = new FormData()
+    form.append('avatar', file)
+    const response = await api.post('/auth/avatar', form, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+    })
+    return response.data
+  },
+
+  deleteAvatar: async (): Promise<User> => {
+    const response = await api.delete('/auth/avatar')
+    return response.data
+  },
+
+  updateProfile: async (data: { username?: string; first_name?: string; last_name?: string }): Promise<User> => {
+    const response = await api.put('/auth/profile', data)
+    return response.data
+  },
+
+  changePassword: async (currentPassword: string, newPassword: string): Promise<void> => {
+    await api.post('/auth/password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    })
   },
 
   resendVerification: async (email: string): Promise<void> => {

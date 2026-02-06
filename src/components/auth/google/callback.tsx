@@ -1,9 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { authService } from '../../../lib/api'
+import { useAuth } from '../../../integrations/auth-context'
 
 export default function GoogleCallback() {
   const navigate = useNavigate()
+  const { refreshUser } = useAuth()
   const [error, setError] = useState('')
 
   // Read the code from the URL
@@ -22,6 +24,8 @@ export default function GoogleCallback() {
         localStorage.setItem('access_token', response.access_token)
         localStorage.setItem('refresh_token', response.refresh_token)
         localStorage.setItem('user', JSON.stringify(response.user))
+        authService.setAccessToken(response.access_token)
+        await refreshUser()
         navigate({ to: '/' })
       } catch (err: any) {
         setError(err.response?.data?.error || 'Google sign-in failed')

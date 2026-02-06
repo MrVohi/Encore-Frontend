@@ -78,6 +78,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     hardLogout()
   }
 
+  const refreshUser = async () => {
+    try {
+      const me = await authService.me()
+      setUser(me)
+      localStorage.setItem('user', JSON.stringify(me))
+    } catch {
+      hardLogout()
+    }
+  }
+
   const googleLogin = async () => {
     const url = await authService.getGoogleLoginUrl()
     window.location.href = url
@@ -89,6 +99,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     register,
     logout,
+    refreshUser,
     googleLogin,
   }
 

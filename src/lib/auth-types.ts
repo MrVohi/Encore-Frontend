@@ -1,11 +1,13 @@
 export interface User {
   id: string;
+  username?: string;
   email: string;
   first_name: string;
   last_name: string;
+  avatar_url?: string;
   is_email_verified: boolean;
-  provider: string;
-  created_at: string;
+  provider?: string;
+  created_at?: string;
 }
 
 export interface AuthResponse {
@@ -34,5 +36,6 @@ export interface AuthContextType {
   login: (data: LoginData) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => void;
+  refreshUser: () => Promise<void>;
   googleLogin: () => Promise<void>;
 }
