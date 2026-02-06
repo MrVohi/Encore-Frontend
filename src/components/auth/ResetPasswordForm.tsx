@@ -12,7 +12,7 @@ export default function ResetPasswordForm() {
   const [loading, setLoading] = useState(false)
   const navigate = useNavigate()
 
-  // Récupérer le token depuis l'URL
+  // Read the token from the URL
   const searchParams = new URLSearchParams(window.location.search)
   const token = searchParams.get('token')
 
@@ -28,17 +28,17 @@ export default function ResetPasswordForm() {
     setError('')
 
     if (formData.newPassword !== formData.confirmPassword) {
-      setError('Les mots de passe ne correspondent pas')
+      setError('Passwords do not match')
       return
     }
 
     if (formData.newPassword.length < 8) {
-      setError('Le mot de passe doit contenir au moins 8 caractères')
+      setError('Password must be at least 8 characters')
       return
     }
 
     if (!token) {
-      setError('Token invalide')
+      setError('Invalid token')
       return
     }
 
@@ -46,10 +46,10 @@ export default function ResetPasswordForm() {
 
     try {
       await authService.resetPassword(token, formData.newPassword)
-      alert('Mot de passe réinitialisé avec succès !')
+      alert('Password reset successfully!')
       navigate({ to: LoginRoute.to })
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Une erreur est survenue')
+      setError(err.response?.data?.error || 'Something went wrong')
     } finally {
       setLoading(false)
     }
@@ -60,7 +60,7 @@ export default function ResetPasswordForm() {
       <div className="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-lg shadow-md">
         <div>
           <h2 className="text-center text-3xl font-extrabold text-white">
-            Réinitialiser le mot de passe
+            Reset your password
           </h2>
         </div>
 
@@ -74,7 +74,7 @@ export default function ResetPasswordForm() {
           <div className="space-y-4">
             <div>
               <label htmlFor="newPassword" className="block text-sm font-medium text-gray-300">
-                Nouveau mot de passe
+                New password
               </label>
               <input
                 id="newPassword"
@@ -90,7 +90,7 @@ export default function ResetPasswordForm() {
 
             <div>
               <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
-                Confirmer le mot de passe
+                Confirm password
               </label>
               <input
                 id="confirmPassword"
@@ -110,7 +110,7 @@ export default function ResetPasswordForm() {
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50"
             >
-              {loading ? 'Réinitialisation...' : 'Réinitialiser'}
+              {loading ? 'Resetting...' : 'Reset password'}
             </button>
           </div>
         </form>

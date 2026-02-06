@@ -17,10 +17,10 @@ export default function ForgotPasswordForm() {
 
     try {
       await authService.requestPasswordReset(email)
-      setMessage('Si cet e-mail existe, un lien de réinitialisation a été envoyé.')
+      setMessage('If this email exists, a reset link has been sent.')
       setEmail('')
     } catch (err: any) {
-      setError(err.response?.data?.error || 'Une erreur est survenue')
+      setError(err.response?.data?.error || 'Something went wrong')
     } finally {
       setLoading(false)
     }
@@ -31,11 +31,10 @@ export default function ForgotPasswordForm() {
       <div className="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-lg shadow-md">
         <div>
           <h2 className="text-center text-3xl font-extrabold text-white">
-            Mot de passe oublié
+            Forgot your password
           </h2>
           <p className="mt-2 text-center text-sm text-gray-400">
-            Entrez votre adresse e-mail et nous vous enverrons un lien pour réinitialiser votre
-            mot de passe.
+            Enter your email address and we will send you a password reset link.
           </p>
         </div>
 
@@ -73,14 +72,14 @@ export default function ForgotPasswordForm() {
               disabled={loading}
               className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50"
             >
-              {loading ? 'Envoi...' : 'Envoyer le lien'}
+              {loading ? 'Sending...' : 'Send reset link'}
             </button>
           </div>
         </form>
 
         <div className="text-center">
           <Link to={LoginRoute.to} className="text-sm text-cyan-400 hover:text-cyan-300">
-        Retour à la connexion
+            Back to sign in
           </Link>
         </div>
       </div>

@@ -1,5 +1,6 @@
-import GoogleCallback from '../components/auth/google/callback';
+import { createFileRoute } from '@tanstack/react-router'
+import GoogleCallback from '../components/auth/google/callback'
 
-export default function AuthCallbackPage() {
-  return <GoogleCallback />;
-}
+export const Route = createFileRoute('/auth-callback')({
+  component: GoogleCallback,
+})

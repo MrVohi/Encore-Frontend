@@ -18,13 +18,13 @@ export default function Dashboard() {
   return (
     <div className="pt-16 min-h-screen bg-[#282c34] text-white py-12 px-4">
       <div className="max-w-4xl mx-auto bg-gray-800 p-8 rounded-lg shadow-md">
-        <h1 className="text-3xl font-bold mb-4">Tableau de bord</h1>
+        <h1 className="text-3xl font-bold mb-4">Dashboard</h1>
         <p className="text-xl text-gray-300 mb-8">
-          Bienvenue, {user.first_name} {user.last_name} !
+          Welcome, {user.first_name} {user.last_name}!
         </p>
 
         <div className="bg-gray-900 p-6 rounded-lg mb-8">
-          <h2 className="text-lg font-semibold mb-4">Informations du compte</h2>
+          <h2 className="text-lg font-semibold mb-4">Account information</h2>
           <div className="space-y-2">
             <p>
               <strong>Email:</strong> {user.email}
@@ -33,15 +33,15 @@ export default function Dashboard() {
               <strong>Provider:</strong> {user.provider}
             </p>
             <p>
-              <strong>Email vérifié:</strong>{' '}
+              <strong>Email verified:</strong>{' '}
               {user.is_email_verified ? (
-                <span className="text-green-400 font-semibold">Oui ✓</span>
+                <span className="text-green-400 font-semibold">Yes ✓</span>
               ) : (
-                <span className="text-red-400 font-semibold">Non ✗</span>
+                <span className="text-red-400 font-semibold">No ✗</span>
               )}
             </p>
             <p className="text-sm text-gray-400 mt-4">
-              Membre depuis: {new Date(user.created_at).toLocaleDateString('fr-FR')}
+              Member since: {new Date(user.created_at).toLocaleDateString('en-US')}
             </p>
           </div>
         </div>
@@ -50,7 +50,7 @@ export default function Dashboard() {
           onClick={handleLogout}
           className="w-full py-3 px-4 bg-red-600 text-white rounded-md hover:bg-red-700 font-semibold transition-colors"
         >
-          Se déconnecter
+          Sign out
         </button>
       </div>
     </div>

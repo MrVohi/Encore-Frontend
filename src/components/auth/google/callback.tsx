@@ -6,14 +6,14 @@ export default function GoogleCallback() {
   const navigate = useNavigate()
   const [error, setError] = useState('')
 
-  // Récupérer le code depuis l'URL
+  // Read the code from the URL
   const searchParams = new URLSearchParams(window.location.search)
   const code = searchParams.get('code')
 
   useEffect(() => {
     const handleCallback = async () => {
       if (!code) {
-        setError('Code manquant')
+        setError('Missing code')
         return
       }
 
@@ -24,7 +24,7 @@ export default function GoogleCallback() {
         localStorage.setItem('user', JSON.stringify(response.user))
         navigate({ to: '/' })
       } catch (err: any) {
-        setError(err.response?.data?.error || 'Erreur de connexion Google')
+        setError(err.response?.data?.error || 'Google sign-in failed')
       }
     }
 
@@ -36,13 +36,13 @@ export default function GoogleCallback() {
       <div className="bg-gray-800 p-8 rounded-lg shadow-md text-center">
         {error ? (
           <div>
-            <h2 className="text-2xl font-bold text-white mb-4">Erreur</h2>
+            <h2 className="text-2xl font-bold text-white mb-4">Error</h2>
             <p className="text-red-400">{error}</p>
           </div>
         ) : (
           <div>
-            <h2 className="text-2xl font-bold text-white mb-4">Connexion en cours...</h2>
-            <p className="text-gray-400">Veuillez patienter</p>
+            <h2 className="text-2xl font-bold text-white mb-4">Signing you in...</h2>
+            <p className="text-gray-400">Please wait</p>
           </div>
         )}
       </div>

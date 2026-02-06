@@ -72,6 +72,10 @@ export const authService = {
     await api.get(`/auth/verify-email?token=${token}`);
   },
 
+  resendVerification: async (email: string): Promise<void> => {
+    await api.post('/auth/resend-verification', { email });
+  },
+
   requestPasswordReset: async (email: string): Promise<void> => {
     await api.post('/auth/forgot-password', { email });
   },

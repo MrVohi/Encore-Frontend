@@ -12,13 +12,16 @@ function RegisterPage() {
   if (loading) {
     return (
       <div className="pt-16 min-h-screen bg-[#282c34] text-white flex items-center justify-center">
-        <div className="text-xl">Chargement...</div>
+        <div className="text-xl">Loading...</div>
       </div>
     )
   }
 
   if (user) {
-    return <Navigate to="/" />
+    if (user.is_email_verified) {
+      return <Navigate to="/" />
+    }
+    return <Navigate to="/verify-email" />
   }
 
   return <RegisterForm />
