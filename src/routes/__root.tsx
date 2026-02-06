@@ -15,7 +15,11 @@ interface MyRouterContext {
   queryClient: QueryClient
 }
 
-function Root() {
+export const Route = createRootRouteWithContext<MyRouterContext>()({
+  component: RootComponent,
+})
+
+function RootComponent() {
   const [selected, setSelected] = useState<Artist | null>(null)
 
   useEffect(() => subscribeSelected(setSelected), [])
@@ -39,7 +43,3 @@ function Root() {
     </>
   )
 }
-
-export const Route = createRootRouteWithContext<MyRouterContext>()({
-  component: Root,
-})

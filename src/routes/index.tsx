@@ -4,4 +4,3 @@ import ArtistsPage from '@/features/artists/pages/ArtistsPage'
 export const Route = createFileRoute('/')({
   component: ArtistsPage,
 })
-
