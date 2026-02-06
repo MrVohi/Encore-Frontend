@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router"
 import { Home, Heart, Ticket, MapPinned } from "lucide-react"
+import { useAuth } from "@/integrations/auth-context"
 
 const baseItem =
   "flex items-center gap-3 p-3 rounded-lg transition-colors mb-2"
@@ -10,6 +11,8 @@ const activeItem =
   "bg-muted text-[var(--encore-accent-warm)]"
 
 export default function Sidebar() {
+  const { user } = useAuth()
+
   return (
     <aside className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-80 bg-card text-card-foreground border-r-[3px] border-border shadow-2xl z-50 flex flex-col">
       <nav className="flex-1 p-4 overflow-y-auto">
@@ -48,6 +51,17 @@ export default function Sidebar() {
           <MapPinned size={20} />
           <span className="font-medium">Concerts Map</span>
         </Link>
+
+        {user?.is_admin && (
+          <Link
+            to="/admin-dashboard"
+            className={`${baseItem} ${hoverItem} mt-6`}
+            activeProps={{ className: `${baseItem} ${activeItem} mt-6` }}
+          >
+            <Home size={20} />
+            <span className="font-medium">Admin Dashboard</span>
+          </Link>
+        )}
       </nav>
     </aside>
   )

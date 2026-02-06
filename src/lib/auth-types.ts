@@ -1,13 +1,15 @@
 export interface User {
-  id: string;
-  username?: string;
-  email: string;
-  first_name: string;
-  last_name: string;
-  avatar_url?: string;
-  is_email_verified: boolean;
-  provider?: string;
-  created_at?: string;
+  id: string
+  username?: string
+  email?: string
+  mail?: string
+  first_name: string
+  last_name: string
+  avatar_url?: string
+  is_email_verified: boolean
+  provider?: string
+  is_admin?: boolean
+  created_at?: string
 }
 
 export interface AuthResponse {
