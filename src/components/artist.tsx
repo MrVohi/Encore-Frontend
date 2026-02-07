@@ -1,4 +1,8 @@
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
+import { useNavigate } from '@tanstack/react-router'
+import { Heart } from 'lucide-react'
+import { useAuth } from '@/integrations/auth-context'
+import { followArtist, getCachedFollowedArtistIds, loadFollowedArtistIds, unfollowArtist } from '@/lib/following'
 
 export type Artist = {
   id: string
@@ -18,12 +22,44 @@ export function ArtistCard({
   onClick?: () => void
 }) {
   const [imgOk, setImgOk] = useState(true)
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [followed, setFollowed] = useState(false)
 
   const imageUrl = artist.artwork_url ?? artist.image_url ?? ''
   const hasImageUrl = imageUrl !== 'None' && imageUrl.trim() !== ''
 
   const showImage = hasImageUrl && imgOk
   const createdDate = new Date(artist.created_at)
+
+  useEffect(() => {
+    if (!user) {
+      setFollowed(false)
+      return
+    }
+    loadFollowedArtistIds().then((ids) => {
+      setFollowed(ids.includes(String(artist.id)))
+    })
+  }, [artist.id, user])
+
+  const handleFollow = async () => {
+    if (!user) {
+      navigate({ to: '/login' })
+      return
+    }
+    const currentlyFollowed = getCachedFollowedArtistIds().includes(String(artist.id))
+    try {
+      if (currentlyFollowed) {
+        await unfollowArtist(artist.id)
+        setFollowed(false)
+      } else {
+        await followArtist(artist.id)
+        setFollowed(true)
+      }
+    } catch {
+      // keep previous state on error
+    }
+  }
 
   return (
     <div
@@ -49,6 +85,22 @@ export function ArtistCard({
         <div className="text-sm opacity-60">
           Created: {createdDate.toLocaleString()}
         </div>
+      </div>
+
+      <div className="mt-3 flex justify-center">
+        <button
+          type="button"
+          onClick={handleFollow}
+          className={[
+            'inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm font-semibold',
+            followed
+              ? 'border-rose-400 bg-rose-500/20 text-rose-100'
+              : 'border-white/20 text-white/80',
+          ].join(' ')}
+        >
+          <Heart size={16} className={followed ? 'fill-rose-400' : 'fill-transparent'} />
+          {followed ? 'Following' : 'Follow'}
+        </button>
       </div>
     </div>
   )

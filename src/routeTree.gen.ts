@@ -16,6 +16,7 @@ import { Route as RegisterRouteImport } from './routes/register'
 import { Route as MapRouteImport } from './routes/map'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as FollowedRouteImport } from './routes/followed'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as AuthCallbackRouteImport } from './routes/auth-callback'
 import { Route as AdminDashboardRouteImport } from './routes/admin-dashboard'
@@ -56,6 +57,11 @@ const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   path: '/forgot-password',
   getParentRoute: () => rootRouteImport,
 } as any)
+const FollowedRoute = FollowedRouteImport.update({
+  id: '/followed',
+  path: '/followed',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const DashboardRoute = DashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
@@ -82,6 +88,7 @@ export interface FileRoutesByFullPath {
   '/admin-dashboard': typeof AdminDashboardRoute
   '/auth-callback': typeof AuthCallbackRoute
   '/dashboard': typeof DashboardRoute
+  '/followed': typeof FollowedRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/map': typeof MapRoute
@@ -95,6 +102,7 @@ export interface FileRoutesByTo {
   '/admin-dashboard': typeof AdminDashboardRoute
   '/auth-callback': typeof AuthCallbackRoute
   '/dashboard': typeof DashboardRoute
+  '/followed': typeof FollowedRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/map': typeof MapRoute
@@ -109,6 +117,7 @@ export interface FileRoutesById {
   '/admin-dashboard': typeof AdminDashboardRoute
   '/auth-callback': typeof AuthCallbackRoute
   '/dashboard': typeof DashboardRoute
+  '/followed': typeof FollowedRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/login': typeof LoginRoute
   '/map': typeof MapRoute
@@ -124,6 +133,7 @@ export interface FileRouteTypes {
     | '/admin-dashboard'
     | '/auth-callback'
     | '/dashboard'
+    | '/followed'
     | '/forgot-password'
     | '/login'
     | '/map'
@@ -137,6 +147,7 @@ export interface FileRouteTypes {
     | '/admin-dashboard'
     | '/auth-callback'
     | '/dashboard'
+    | '/followed'
     | '/forgot-password'
     | '/login'
     | '/map'
@@ -150,6 +161,7 @@ export interface FileRouteTypes {
     | '/admin-dashboard'
     | '/auth-callback'
     | '/dashboard'
+    | '/followed'
     | '/forgot-password'
     | '/login'
     | '/map'
@@ -164,6 +176,7 @@ export interface RootRouteChildren {
   AdminDashboardRoute: typeof AdminDashboardRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   DashboardRoute: typeof DashboardRoute
+  FollowedRoute: typeof FollowedRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   LoginRoute: typeof LoginRoute
   MapRoute: typeof MapRoute
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ForgotPasswordRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/followed': {
+      id: '/followed'
+      path: '/followed'
+      fullPath: '/followed'
+      preLoaderRoute: typeof FollowedRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/dashboard': {
       id: '/dashboard'
       path: '/dashboard'
@@ -260,6 +280,7 @@ const rootRouteChildren: RootRouteChildren = {
   AdminDashboardRoute: AdminDashboardRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   DashboardRoute: DashboardRoute,
+  FollowedRoute: FollowedRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   LoginRoute: LoginRoute,
   MapRoute: MapRoute,
