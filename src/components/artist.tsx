@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useNavigate } from '@tanstack/react-router'
 import { Heart } from 'lucide-react'
 import { useAuth } from '@/integrations/auth-context'
-import { isArtistFollowed, toggleArtistFollow } from '@/lib/following'
+import { followArtist, getCachedFollowedArtistIds, loadFollowedArtistIds, unfollowArtist } from '@/lib/following'
 
 export type Artist = {
   id: string
@@ -26,15 +26,32 @@ export function ArtistCard({ artist }: { artist: Artist }) {
   const createdDate = new Date(artist.created_at)
 
   useEffect(() => {
-    setFollowed(isArtistFollowed(user?.id, artist.id))
-  }, [artist.id, user?.id])
+    if (!user) {
+      setFollowed(false)
+      return
+    }
+    loadFollowedArtistIds().then((ids) => {
+      setFollowed(ids.includes(String(artist.id)))
+    })
+  }, [artist.id, user])
 
-  const handleFollow = () => {
+  const handleFollow = async () => {
     if (!user) {
       navigate({ to: '/login' })
       return
     }
-    setFollowed(toggleArtistFollow(user.id, artist.id))
+    const currentlyFollowed = getCachedFollowedArtistIds().includes(String(artist.id))
+    try {
+      if (currentlyFollowed) {
+        await unfollowArtist(artist.id)
+        setFollowed(false)
+      } else {
+        await followArtist(artist.id)
+        setFollowed(true)
+      }
+    } catch {
+      // keep previous state on error
+    }
   }
 
   return (

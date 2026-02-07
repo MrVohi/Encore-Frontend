@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import { useEffect, useState } from 'react'
 import { useAuth } from '@/integrations/auth-context'
 import { type Artist, ArtistCard } from '../components/artist'
-import { getFollowedArtistIds } from '@/lib/following'
+import { loadFollowedArtistIds } from '@/lib/following'
 import { API_URL } from '@/lib/api'
 
 export const Route = createFileRoute('/followed')({
@@ -18,18 +18,21 @@ function Followed() {
   const [followedIds, setFollowedIds] = useState<string[]>([])
 
   useEffect(() => {
-    setFollowedIds(getFollowedArtistIds(user?.id))
-  }, [user?.id])
+    if (!user) {
+      setFollowedIds([])
+      return
+    }
+    loadFollowedArtistIds(true).then(setFollowedIds)
+  }, [user])
 
   useEffect(() => {
     const handler = (event: Event) => {
-      const detail = (event as CustomEvent).detail as { userId?: string }
-      if (detail?.userId && detail.userId !== user?.id) return
-      setFollowedIds(getFollowedArtistIds(user?.id))
+      if (!user) return
+      loadFollowedArtistIds(true).then(setFollowedIds)
     }
     window.addEventListener('followed:change', handler)
     return () => window.removeEventListener('followed:change', handler)
-  }, [user?.id])
+  }, [user])
 
   useEffect(() => {
     if (!user) {
