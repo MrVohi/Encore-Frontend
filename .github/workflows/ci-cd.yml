@@ -1,0 +1,65 @@
+name: CI/CD
+
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      - name: Lint
+        run: npm run lint --if-present
+
+      - name: Test
+        run: npm run test --if-present
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    if: github.ref == 'refs/heads/main' && vars.PROD_DEPLOY_ENABLED == 'true'
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install
+        run: npm ci
+
+      - name: Build
+        run: npm run build
+
+      # Placeholder: Upload sourcemaps to Sentry in CI when secrets are configured.
+      # Requires: SENTRY_AUTH_TOKEN, SENTRY_ORG, SENTRY_PROJECT
+      # - name: Upload Sentry sourcemaps
+      #   run: npx sentry-cli sourcemaps upload --org $SENTRY_ORG --project $SENTRY_PROJECT dist
+
+      # Safer cleanup as a separate CI step (avoid deleting too early):
+      # - name: Remove sourcemaps
+      #   run: rm -f dist/**/*.map
+
+      # Placeholder: Cloudflare Pages deployment
+      # - name: Deploy to Cloudflare Pages
+      #   run: echo "Deploy step goes here"
