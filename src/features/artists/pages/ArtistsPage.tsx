@@ -37,10 +37,10 @@ export default function ArtistsPage() {
                 if (filters.name) opts.name = filters.name
                 if (filters.genre && filters.genre !== 'all') opts.genre = filters.genre.replaceAll(' ', '+')
                 if (filters.order) opts.order = orderMap[filters.order] ?? undefined
-
                 const json = await listArtists(opts, ac.signal)
                 if (!Array.isArray(json)) throw new Error('Unexpected response (not an array)')
-                setArtists(json as Artist[])
+                const artists: Artist[] = json
+                setArtists(artists)
             } catch (e) {
                 if (e instanceof DOMException && e.name === 'AbortError') return
                 setArtists([])
@@ -105,7 +105,7 @@ export default function ArtistsPage() {
                     if (cancelled) return
                     await new Promise<void>((resolve) => {
                         if ('requestIdleCallback' in window) {
-                            ;(window as any).requestIdleCallback(() => resolve())
+                            ; (window as any).requestIdleCallback(() => resolve())
                         } else {
                             setTimeout(() => resolve(), 60)
                         }
@@ -283,16 +283,16 @@ export default function ArtistsPage() {
             const raw = artist as Artist & Record<string, unknown>
             const followers = Number(
                 raw.followers_count ??
-                    raw.followers ??
-                    raw.followersCount ??
-                    0,
+                raw.followers ??
+                raw.followersCount ??
+                0,
             )
             const tickets = Number(
                 raw.tickets_sold ??
-                    raw.ticketsSold ??
-                    raw.ticket_count ??
-                    raw.tickets ??
-                    0,
+                raw.ticketsSold ??
+                raw.ticket_count ??
+                raw.tickets ??
+                0,
             )
             return followers + tickets
         }
@@ -353,12 +353,12 @@ export default function ArtistsPage() {
                         <InputGroupAddon className="artists-search-addon">
                             <Search />
                         </InputGroupAddon>
-                    <InputGroupInput
-                        placeholder="Search artists..."
-                        value={filters.name}
-                        onChange={(e) => setFilters({ name: e.target.value })}
-                        className="artists-search-input"
-                    />
+                        <InputGroupInput
+                            placeholder="Search artists..."
+                            value={filters.name}
+                            onChange={(e) => setFilters({ name: e.target.value })}
+                            className="artists-search-input"
+                        />
                     </InputGroup>
                     <div className="shelfmeta">
                         <span>{filteredArtists.length} artists</span>

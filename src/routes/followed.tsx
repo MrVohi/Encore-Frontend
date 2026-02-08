@@ -50,7 +50,8 @@ function Followed() {
 
         const json = await listArtists(undefined, controller.signal)
         if (!Array.isArray(json)) throw new Error('Unexpected response (not an array)')
-        setArtists(json as Artist[])
+        const artists: Artist[] = json
+        setArtists(artists)
       } catch (e) {
         if (e instanceof DOMException && e.name === 'AbortError') return
         setArtists([])
