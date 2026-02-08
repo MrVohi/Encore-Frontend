@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
+import { API_URL } from '@/lib/api'
 
 type Concert = {
   id: string
@@ -24,7 +26,6 @@ export function ConcertAdminModal({
   onClose: () => void
   mode: ConcertAdminMode
 }) {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
   const isCreate = mode === 'create'
   const isEdit = mode === 'edit'
   const isDelete = mode === 'delete'
@@ -344,22 +345,22 @@ export function ConcertAdminModal({
     }
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8">
-      <div className="relative w-full max-w-4xl rounded-2xl border border-gray-800 bg-gray-950 text-gray-100 shadow-2xl">
-        <div className="flex items-start justify-between border-b border-gray-800 px-6 py-4">
+  const content = (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 py-8">
+      <div className="relative w-full max-w-4xl rounded-2xl border border-border bg-card text-foreground shadow-2xl admin-modal-surface">
+        <div className="flex items-start justify-between border-b border-border px-6 py-4">
           <div>
-            <p className="text-xs uppercase tracking-widest text-gray-500">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
               Admin
             </p>
-            <h2 className="text-xl font-semibold text-white">
+            <h2 className="text-xl font-semibold text-foreground">
               {isCreate
                 ? 'Create Concert'
                 : isEdit
                   ? 'Edit Concert'
                   : 'Delete Concert'}
             </h2>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               {isCreate
                 ? 'Schedule a new concert.'
                 : isEdit
@@ -370,7 +371,7 @@ export function ConcertAdminModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-gray-800 bg-gray-900 px-3 py-1.5 text-xs text-gray-300 hover:border-gray-700 hover:bg-gray-800"
+            className="rounded-md border border-border bg-secondary px-3 py-1.5 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
           >
             Close
           </button>
@@ -379,18 +380,18 @@ export function ConcertAdminModal({
         <div className="mx-auto max-w-2xl px-6 py-6 max-h-[80vh] overflow-y-auto">
           <section className="space-y-4">
             {isEdit && (
-              <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
+              <div className="rounded-xl border border-border bg-secondary p-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-white">
+                  <h3 className="text-sm font-semibold text-foreground">
                     Edit Existing Concert
                   </h3>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-muted-foreground">
                     Load for editing
                   </span>
                 </div>
                 <div className="mt-4 grid gap-3">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-gray-500">
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
                       Select Concert
                     </label>
                     <select
@@ -398,7 +399,7 @@ export function ConcertAdminModal({
                       onChange={(event) =>
                         setSelectedConcertId(event.target.value)
                       }
-                      className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                      className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                     >
                       <option value="">
                         {concertsLoading
@@ -415,7 +416,7 @@ export function ConcertAdminModal({
                   <button
                     type="button"
                     onClick={handleLoadConcert}
-                    className="rounded-md border border-gray-800 bg-gray-950 px-4 py-2 text-xs text-gray-300 hover:border-gray-700 hover:bg-gray-800"
+                    className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
                   >
                     Load Concert
                   </button>
@@ -424,9 +425,9 @@ export function ConcertAdminModal({
             )}
 
             {isDelete && (
-              <div className="rounded-xl border border-red-900/60 bg-red-950/20 p-4">
+              <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-red-200">
+                  <h3 className="text-sm font-semibold text-red-700">
                     Delete Concert
                   </h3>
                   <span className="text-xs text-red-300">
@@ -443,7 +444,7 @@ export function ConcertAdminModal({
                       onChange={(event) =>
                         setSelectedConcertId(event.target.value)
                       }
-                      className="mt-2 w-full rounded-md border border-red-900/60 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-red-400 focus:outline-none"
+                      className="mt-2 w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-sm text-foreground focus:border-red-400 focus:outline-none"
                     >
                       <option value="">
                         {concertsLoading
@@ -483,12 +484,12 @@ export function ConcertAdminModal({
                             }`
                           : 'delete city country artist'
                       }
-                      className="mt-2 w-full rounded-md border border-red-900/60 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder:text-red-300/50 focus:border-red-400 focus:outline-none"
+                      className="mt-2 w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-sm text-foreground placeholder:text-red-300/50 focus:border-red-400 focus:outline-none"
                     />
                     <div className="mt-1 text-xs text-red-300/70">
                       <p>This permanently deletes the concert.</p>
                       {selectedConcertId && (
-                        <p className="mt-1 text-red-200">
+                        <p className="mt-1 text-red-700">
                           {concerts.find((c) => c.id === selectedConcertId)?.city}{' '}
                           {concerts.find((c) => c.id === selectedConcertId)
                             ?.country}{' '}
@@ -507,7 +508,7 @@ export function ConcertAdminModal({
                     type="button"
                     onClick={handleDeleteConcert}
                     disabled={isSaving}
-                    className="rounded-md bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-500"
+                    className="rounded-md bg-destructive px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
                   >
                     {isSaving ? 'Deleting…' : 'Delete Concert'}
                   </button>
@@ -516,12 +517,12 @@ export function ConcertAdminModal({
             )}
 
             {!isDelete && (
-              <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
+              <div className="rounded-xl border border-border bg-secondary p-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-white">
+                  <h3 className="text-sm font-semibold text-foreground">
                     Concert Details
                   </h3>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-muted-foreground">
                     {isEdit
                       ? 'GET /api/concerts/:id'
                       : 'POST /api/artists/:id/concerts'}
@@ -530,7 +531,7 @@ export function ConcertAdminModal({
                 <div className="mt-4 grid gap-3">
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="text-xs uppercase tracking-widest text-gray-500">
+                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
                         City
                       </label>
                       <input
@@ -541,11 +542,11 @@ export function ConcertAdminModal({
                             city: event.target.value,
                           }))
                         }
-                        className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="text-xs uppercase tracking-widest text-gray-500">
+                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
                         Country
                       </label>
                       <div className="mt-2">
@@ -559,7 +560,7 @@ export function ConcertAdminModal({
                             }))
                           }
                           placeholder="Start typing or choose country"
-                          className="w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-500 focus:border-cyan-500 focus:outline-none"
+                          className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                         />
                         <datalist id="country-options">
                           {countryOptions.map((country) => (
@@ -571,12 +572,12 @@ export function ConcertAdminModal({
                       </div>
                     </div>
                   </div>
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     {isGeocoding && ' Geocoding...'}
                   </p>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="text-xs uppercase tracking-widest text-gray-500">
+                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
                         When
                       </label>
                       <input
@@ -588,11 +589,11 @@ export function ConcertAdminModal({
                             when: event.target.value,
                           }))
                         }
-                        className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="text-xs uppercase tracking-widest text-gray-500">
+                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
                         Status
                       </label>
                       <select
@@ -603,7 +604,7 @@ export function ConcertAdminModal({
                             status: event.target.value,
                           }))
                         }
-                        className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                       >
                         <option value="">Choose a status</option>
                         <option value="on_sale">On Sale</option>
@@ -616,7 +617,7 @@ export function ConcertAdminModal({
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="text-xs uppercase tracking-widest text-gray-500">
+                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
                         Capacity
                       </label>
                       <input
@@ -627,11 +628,11 @@ export function ConcertAdminModal({
                             capacity: event.target.value,
                           }))
                         }
-                        className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="text-xs uppercase tracking-widest text-gray-500">
+                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
                         Artist
                       </label>
                       <select
@@ -642,7 +643,7 @@ export function ConcertAdminModal({
                             artist_id: event.target.value,
                           }))
                         }
-                        className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                       >
                         <option value="">
                           {artistsLoading ? 'Loading artists…' : 'Choose an artist'}
@@ -657,7 +658,7 @@ export function ConcertAdminModal({
                   </div>
                   <div className="grid gap-3 sm:grid-cols-2">
                     <div>
-                      <label className="text-xs uppercase tracking-widest text-gray-500">
+                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
                         Latitude
                       </label>
                       <input
@@ -668,11 +669,11 @@ export function ConcertAdminModal({
                             lat: event.target.value,
                           }))
                         }
-                        className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                       />
                     </div>
                     <div>
-                      <label className="text-xs uppercase tracking-widest text-gray-500">
+                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
                         Longitude
                       </label>
                       <input
@@ -683,7 +684,7 @@ export function ConcertAdminModal({
                             lng: event.target.value,
                           }))
                         }
-                        className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                       />
                     </div>
                   </div>
@@ -693,7 +694,7 @@ export function ConcertAdminModal({
                     type="button"
                     onClick={isEdit ? handleUpdateConcert : handleCreateConcert}
                     disabled={isSaving}
-                    className="rounded-md bg-cyan-600 px-4 py-2 text-xs font-semibold text-white hover:bg-cyan-500"
+                    className="rounded-md bg-[var(--encore-accent-cool)] px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
                   >
                     {isSaving
                       ? 'Saving...'
@@ -704,7 +705,7 @@ export function ConcertAdminModal({
                   <button
                     type="button"
                     onClick={handleReset}
-                    className="rounded-md border border-gray-800 bg-gray-950 px-4 py-2 text-xs text-gray-300 hover:border-gray-700 hover:bg-gray-800"
+                    className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
                   >
                     Reset Form
                   </button>
@@ -720,4 +721,7 @@ export function ConcertAdminModal({
       </div>
     </div>
   )
+
+  if (typeof document === 'undefined') return content
+  return createPortal(content, document.body)
 }

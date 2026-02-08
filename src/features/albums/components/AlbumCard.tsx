@@ -1,7 +1,9 @@
 import type { Album } from '@/types/album'
 
 export function AlbumCard({ album }: { album: Album }) {
-  const release = album.release_date ? new Date(album.release_date).toLocaleDateString() : 'Unknown'
+  const release = album.release_date
+    ? new Date(album.release_date).toLocaleDateString()
+    : 'Unknown'
 
   return (
     <div className="bg-secondary rounded-lg p-3 w-full border border-border/30">

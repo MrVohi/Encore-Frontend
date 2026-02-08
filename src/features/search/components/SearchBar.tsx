@@ -82,7 +82,7 @@ export default function SearchBar({ onSelectArtist }: { onSelectArtist?: (a: any
   )
 
   return (
-    <div ref={wrapRef} className="relative w-[min(20rem,100%)]">
+    <div ref={wrapRef} className="theme-test-search relative z-50 w-[min(20rem,100%)]">
       {/* Input shell */}
       <div className="relative h-10 rounded-full bg-card overflow-hidden brutal">
         {/* Icon */}

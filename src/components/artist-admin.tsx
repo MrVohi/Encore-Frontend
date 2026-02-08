@@ -1,8 +1,10 @@
 import { useEffect, useState } from 'react'
+import { createPortal } from 'react-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { type Artist } from './artist'
+import { API_URL } from '@/lib/api'
 
 type Track = {
   id: string
@@ -64,7 +66,6 @@ export function ArtistAdminModal({
   onClose: () => void
   mode: ArtistAdminMode
 }) {
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
   const isCreate = mode === 'create'
   const isEdit = mode === 'edit'
   const isDelete = mode === 'delete'
@@ -652,21 +653,21 @@ export function ArtistAdminModal({
   // It is also manual, and we need title & release_date. It will be on /api/{artist_id}/albums
   // But what is an album without tracks?
   // We need to post for each track: title and track number (unique). It will be on /api/{artist_id}/albums/{album_id}/tracks
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 px-4 py-8">
-      <div className="relative w-full max-w-4xl rounded-2xl border border-gray-800 bg-gray-950 text-gray-100 shadow-2xl">
-        <div className="flex items-start justify-between border-b border-gray-800 px-6 py-4">
+  const content = (
+    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 py-8">
+      <div className="relative w-full max-w-4xl rounded-2xl border border-border bg-card text-foreground shadow-2xl admin-modal-surface">
+        <div className="flex items-start justify-between border-b border-border px-6 py-4">
           <div>
-            <p className="text-xs uppercase tracking-widest text-gray-500">
+            <p className="text-xs uppercase tracking-widest text-muted-foreground">
               Admin
             </p>
-            <h2 className="text-xl font-semibold text-white">{headerTitle}</h2>
-            <p className="mt-1 text-sm text-gray-400">{headerSubtitle}</p>
+            <h2 className="text-xl font-semibold text-foreground">{headerTitle}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{headerSubtitle}</p>
           </div>
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-gray-800 bg-gray-900 px-3 py-1.5 text-xs text-gray-300 hover:border-gray-700 hover:bg-gray-800"
+            className="rounded-md border border-border bg-secondary px-3 py-1.5 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
           >
             Close
           </button>
@@ -675,30 +676,30 @@ export function ArtistAdminModal({
         <div
           className={[
             'px-6 py-6',
-            isEdit ? 'grid gap-6 lg:grid-cols-[1.1fr_0.9fr]' : 'mx-auto max-w-2xl',
+            'grid gap-6 md:grid-cols-[1.1fr_0.9fr]',
             'max-h-[80vh] overflow-y-auto',
           ].join(' ')}
         >
           <section className="space-y-4">
             {isEdit && (
-              <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
+              <div className="rounded-xl border border-border bg-secondary p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-white">
+                <h3 className="text-sm font-semibold text-foreground">
                   Edit Existing Artist
                 </h3>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   Load for editing
                 </span>
               </div>
               <div className="mt-4 grid gap-3">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-gray-500">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
                     Select Artist
                   </label>
                   <select
                     value={selectedArtistId}
                     onChange={(event) => setSelectedArtistId(event.target.value)}
-                    className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                   >
                     <option value="">
                       {artistsLoading ? 'Loading artists…' : 'Choose an artist'}
@@ -713,12 +714,12 @@ export function ArtistAdminModal({
                 <button
                   type="button"
                   onClick={handleLoadArtist}
-                  className="rounded-md border border-gray-800 bg-gray-950 px-4 py-2 text-xs text-gray-300 hover:border-gray-700 hover:bg-gray-800"
+                  className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
                 >
                   Load Artist
                 </button>
                 {selectedArtistId && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-muted-foreground">
                     Selected ID: {selectedArtistId}
                   </p>
                 )}
@@ -727,9 +728,9 @@ export function ArtistAdminModal({
             )}
 
             {isDelete && (
-              <div className="rounded-xl border border-red-900/60 bg-red-950/20 p-4">
+              <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-red-200">
+                <h3 className="text-sm font-semibold text-red-700">
                   Delete Artist
                 </h3>
                 <span className="text-xs text-red-300">
@@ -744,7 +745,7 @@ export function ArtistAdminModal({
                   <select
                     value={deleteArtistId}
                     onChange={(event) => setDeleteArtistId(event.target.value)}
-                    className="mt-2 w-full rounded-md border border-red-900/60 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-red-400 focus:outline-none"
+                    className="mt-2 w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-sm text-foreground focus:border-red-400 focus:outline-none"
                   >
                     <option value="">
                       {artistsLoading ? 'Loading artists…' : 'Choose an artist'}
@@ -771,7 +772,7 @@ export function ArtistAdminModal({
                           }`
                         : 'delete artist-name'
                     }
-                    className="mt-2 w-full rounded-md border border-red-900/60 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder:text-red-300/50 focus:border-red-400 focus:outline-none"
+                    className="mt-2 w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-sm text-foreground placeholder:text-red-300/50 focus:border-red-400 focus:outline-none"
                   />
                   <p className="mt-1 text-xs text-red-300/70">
                     This permanently deletes the artist and all related albums
@@ -782,7 +783,7 @@ export function ArtistAdminModal({
                   type="button"
                   onClick={handleDeleteArtist}
                   disabled={isSaving}
-                  className="rounded-md bg-red-600 px-4 py-2 text-xs font-semibold text-white hover:bg-red-500"
+                  className="rounded-md bg-destructive px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
                 >
                   {isSaving ? 'Deleting…' : 'Delete Artist'}
                 </button>
@@ -791,25 +792,25 @@ export function ArtistAdminModal({
             )}
 
             {!isDelete && (
-              <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
+              <div className="rounded-xl border border-border bg-secondary p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-white">
+                <h3 className="text-sm font-semibold text-foreground">
                   Artist Details
                 </h3>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   {isEdit ? 'PUT /api/artists/:id' : 'POST /api/artists'}
                 </span>
               </div>
               <div className="mt-4 grid gap-4 md:grid-cols-2">
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-gray-500">
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
                       Name
                     </label>
                     <input
                       placeholder="Artist name"
                       {...register('name')}
-                      className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none"
+                      className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                     />
                     {errors.name && (
                       <p className="mt-1 text-xs text-red-400">
@@ -818,13 +819,13 @@ export function ArtistAdminModal({
                     )}
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-gray-500">
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
                       Genre
                     </label>
                     <input
                       placeholder="Genre"
                       {...register('genre')}
-                      className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none"
+                      className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                     />
                     {errors.genre && (
                       <p className="mt-1 text-xs text-red-400">
@@ -835,21 +836,21 @@ export function ArtistAdminModal({
                 </div>
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-gray-500">
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
                       Preview Audio
                     </label>
                     <label
-                      className="mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-gray-800 bg-gray-950 px-4 py-6 text-center text-sm text-gray-400 hover:border-cyan-500/60 hover:text-gray-200"
+                      className="mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground hover:border-[var(--encore-accent-cool)] hover:text-foreground"
                       onDragOver={(event) => event.preventDefault()}
                       onDrop={(event) => handleDropFile(event, 'preview')}
                     >
-                      <span className="text-xs uppercase tracking-widest text-gray-500">
+                      <span className="text-xs uppercase tracking-widest text-muted-foreground">
                         Drag & drop
                       </span>
-                      <span className="text-sm text-gray-200">
+                      <span className="text-sm text-foreground">
                         Upload preview audio
                       </span>
-                      <span className="rounded-md border border-gray-700 bg-gray-900 px-3 py-1 text-xs text-gray-300">
+                      <span className="rounded-md border border-border bg-secondary px-3 py-1 text-xs text-muted-foreground">
                         Choose file
                       </span>
                       <input
@@ -865,31 +866,31 @@ export function ArtistAdminModal({
                         }
                       />
                     </label>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Upload a short preview clip (mp3, wav).
                     </p>
                     {previewFile && (
-                      <p className="mt-1 text-xs text-gray-400">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         Selected: {previewFile.name}
                       </p>
                     )}
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-gray-500">
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
                       Artist Artwork
                     </label>
                     <label
-                      className="mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-gray-800 bg-gray-950 px-4 py-6 text-center text-sm text-gray-400 hover:border-cyan-500/60 hover:text-gray-200"
+                      className="mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground hover:border-[var(--encore-accent-cool)] hover:text-foreground"
                       onDragOver={(event) => event.preventDefault()}
                       onDrop={(event) => handleDropFile(event, 'artwork')}
                     >
-                      <span className="text-xs uppercase tracking-widest text-gray-500">
+                      <span className="text-xs uppercase tracking-widest text-muted-foreground">
                         Drag & drop
                       </span>
-                      <span className="text-sm text-gray-200">
+                      <span className="text-sm text-foreground">
                         Upload artist artwork
                       </span>
-                      <span className="rounded-md border border-gray-700 bg-gray-900 px-3 py-1 text-xs text-gray-300">
+                      <span className="rounded-md border border-border bg-secondary px-3 py-1 text-xs text-muted-foreground">
                         Choose file
                       </span>
                       <input
@@ -905,11 +906,11 @@ export function ArtistAdminModal({
                         }
                       />
                     </label>
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Upload square cover art (jpg, png).
                     </p>
                     {artworkFile && (
-                      <p className="mt-1 text-xs text-gray-400">
+                      <p className="mt-1 text-xs text-muted-foreground">
                         Selected: {artworkFile.name}
                       </p>
                     )}
@@ -923,7 +924,7 @@ export function ArtistAdminModal({
                     isEdit ? handleUpdateArtist : handleSaveArtist,
                   )}
                   disabled={isSaving}
-                  className="rounded-md bg-cyan-600 px-4 py-2 text-xs font-semibold text-white hover:bg-cyan-500"
+                  className="rounded-md bg-[var(--encore-accent-cool)] px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
                 >
                   {isSaving
                     ? 'Saving...'
@@ -934,7 +935,7 @@ export function ArtistAdminModal({
                 <button
                   type="button"
                   onClick={handleReset}
-                  className="rounded-md border border-gray-800 bg-gray-950 px-4 py-2 text-xs text-gray-300 hover:border-gray-700 hover:bg-gray-800"
+                  className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
                 >
                   Reset Form
                 </button>
@@ -949,36 +950,36 @@ export function ArtistAdminModal({
 
           <section className="space-y-4">
           {isEdit && (
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
+          <div className="rounded-xl border border-border bg-secondary p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-white">
+                <h3 className="text-sm font-semibold text-foreground">
                   Albums For Artist
                 </h3>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   POST /api/{'{artist_id}'}/albums
                 </span>
               </div>
               <div className="mt-4 grid gap-3">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-gray-500">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
                     Album Title
                   </label>
                   <input
                     placeholder="Album title"
                     value={albumTitle}
                     onChange={(event) => setAlbumTitle(event.target.value)}
-                    className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none"
+                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-gray-500">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
                     Release Date
                   </label>
                   <input
                     type="date"
                     value={albumReleaseDate}
                     onChange={(event) => setAlbumReleaseDate(event.target.value)}
-                    className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                   />
                 </div>
               </div>
@@ -987,14 +988,14 @@ export function ArtistAdminModal({
                   type="button"
                   onClick={handleAddAlbum}
                   disabled={isSaving}
-                  className="rounded-md bg-cyan-600 px-4 py-2 text-xs font-semibold text-white hover:bg-cyan-500"
+                  className="rounded-md bg-[var(--encore-accent-cool)] px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
                 >
                   {isSaving ? 'Saving...' : 'Add Album'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowAlbums((prev) => !prev)}
-                  className="rounded-md border border-gray-800 bg-gray-950 px-4 py-2 text-xs text-gray-300 hover:border-gray-700 hover:bg-gray-800"
+                  className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
                 >
                   {showAlbums ? 'Hide Albums' : 'Show Albums'}
                 </button>
@@ -1002,10 +1003,10 @@ export function ArtistAdminModal({
               {showAlbums && (
                 <div className="mt-4 space-y-3">
                   {albumsLoading && (
-                    <p className="text-xs text-gray-500">Loading albums…</p>
+                    <p className="text-xs text-muted-foreground">Loading albums…</p>
                   )}
                   {!albumsLoading && albums.length === 0 && (
-                    <p className="text-xs text-gray-500">No albums yet.</p>
+                    <p className="text-xs text-muted-foreground">No albums yet.</p>
                   )}
                   {!albumsLoading &&
                     albums.map((album) => (
@@ -1016,18 +1017,18 @@ export function ArtistAdminModal({
             </div>
             )}
             {isEdit && (
-            <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
+            <div className="rounded-xl border border-border bg-secondary p-4">
               <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-white">
+                <h3 className="text-sm font-semibold text-foreground">
                   Tracks For Album
                 </h3>
-                <span className="text-xs text-gray-500">
+                <span className="text-xs text-muted-foreground">
                   POST /api/albums/{'{album_id}'}/tracks
                 </span>
               </div>
               <div className="mt-4 grid gap-3">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-gray-500">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
                     Select Album
                   </label>
                   <select
@@ -1035,7 +1036,7 @@ export function ArtistAdminModal({
                     onChange={(event) =>
                       setSelectedTrackAlbumId(event.target.value)
                     }
-                    className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                   >
                     <option value="">
                       {albumsLoading ? 'Loading albums…' : 'Choose an album'}
@@ -1047,7 +1048,7 @@ export function ArtistAdminModal({
                     ))}
                   </select>
                   {selectedTrackAlbumId && (
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Selected:{' '}
                       {albums.find((a) => a.id === selectedTrackAlbumId)?.title ??
                         ''}
@@ -1055,7 +1056,7 @@ export function ArtistAdminModal({
                   )}
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-gray-500">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
                     Track Title
                   </label>
                   <input
@@ -1068,11 +1069,11 @@ export function ArtistAdminModal({
                         handleAddTrack()
                       }
                     }}
-                    className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none"
+                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                   />
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-gray-500">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
                     Track Number
                   </label>
                   <input
@@ -1080,21 +1081,21 @@ export function ArtistAdminModal({
                     value={trackNumber}
                     onChange={(event) => setTrackNumber(event.target.value)}
                     readOnly={!manualTrackNumber}
-                    className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none"
+                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                   />
-                  <p className="mt-1 text-xs text-gray-500">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     {manualTrackNumber
                       ? 'Manual override enabled.'
                       : 'Auto-assigned based on existing tracks.'}
                   </p>
-                  <label className="mt-2 flex items-center gap-2 text-xs text-gray-400">
+                  <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
                     <input
                       type="checkbox"
                       checked={manualTrackNumber}
                       onChange={(event) => {
                         setManualTrackNumber(event.target.checked)
                       }}
-                      className="h-4 w-4 rounded border-gray-700 bg-gray-900 text-cyan-500 focus:ring-cyan-500"
+                      className="h-4 w-4 rounded border-border bg-secondary text-[var(--encore-accent-cool)] focus:ring-[var(--encore-accent-cool)]"
                     />
                     Manually set track number
                   </label>
@@ -1105,14 +1106,14 @@ export function ArtistAdminModal({
                   type="button"
                   onClick={handleAddTrack}
                   disabled={isSaving || !selectedTrackAlbumId}
-                  className="rounded-md bg-cyan-600 px-4 py-2 text-xs font-semibold text-white hover:bg-cyan-500"
+                  className="rounded-md bg-[var(--encore-accent-cool)] px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
                 >
                   {isSaving ? 'Saving...' : 'Add Track'}
                 </button>
                 <button
                   type="button"
                   onClick={() => setShowTracks((prev) => !prev)}
-                  className="rounded-md border border-gray-800 bg-gray-950 px-4 py-2 text-xs text-gray-300 hover:border-gray-700 hover:bg-gray-800"
+                  className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
                 >
                   {showTracks ? 'Hide Tracks' : 'Show Tracks'}
                 </button>
@@ -1120,19 +1121,19 @@ export function ArtistAdminModal({
               {showTracks && (
                 <div className="mt-4 space-y-2 text-sm">
                   {tracksLoading && (
-                    <p className="text-xs text-gray-500">Loading tracks…</p>
+                    <p className="text-xs text-muted-foreground">Loading tracks…</p>
                   )}
                   {!tracksLoading && tracks.length === 0 && (
-                    <p className="text-xs text-gray-500">No tracks yet.</p>
+                    <p className="text-xs text-muted-foreground">No tracks yet.</p>
                   )}
                   {!tracksLoading &&
                     tracks.map((track) => (
                       <div
                         key={track.id}
-                        className="flex items-center justify-between rounded-md border border-gray-800/60 bg-gray-950/40 px-3 py-2"
+                        className="flex items-center justify-between rounded-md border border-border/60 bg-card/60 px-3 py-2"
                       >
-                        <span className="text-gray-200">{track.title}</span>
-                        <span className="text-xs text-gray-500">
+                        <span className="text-foreground">{track.title}</span>
+                        <span className="text-xs text-muted-foreground">
                           #{track.track_no}
                         </span>
                       </div>
@@ -1143,11 +1144,11 @@ export function ArtistAdminModal({
             )}
 
             {isEdit && (
-              <div className="rounded-xl border border-dashed border-gray-800/80 bg-gray-900/40 p-4 text-center">
-                <p className="text-xs uppercase tracking-widest text-gray-500">
+              <div className="rounded-xl border border-dashed border-border/80 bg-secondary/60 p-4 text-center">
+                <p className="text-xs uppercase tracking-widest text-muted-foreground">
                   Selected Artist Preview
                 </p>
-                <p className="mt-3 text-sm text-gray-400">
+                <p className="mt-3 text-sm text-muted-foreground">
                   {(() => {
                     const selected = artists.find(
                       (a) => a.id === selectedArtistId,
@@ -1177,46 +1178,46 @@ export function ArtistAdminModal({
                     />
                   )
                 })()}
-                <p className="mt-2 text-xs text-gray-500">
+                <p className="mt-2 text-xs text-muted-foreground">
                   Drop in artwork and preview URLs to see it here.
                 </p>
               </div>
             )}
 
             {isCreate && (
-              <div className="rounded-xl border border-gray-800 bg-gray-900 p-4">
+              <div className="rounded-xl border border-border bg-secondary p-4">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-white">
+                  <h3 className="text-sm font-semibold text-foreground">
                     Optional Album + Batch Tracks
                   </h3>
-                  <span className="text-xs text-gray-500">
+                  <span className="text-xs text-muted-foreground">
                     POST /api/artists/:id/albums + tracks
                   </span>
                 </div>
-                <label className="mt-4 flex items-center gap-2 text-xs text-gray-400">
+                <label className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
                   <input
                     type="checkbox"
                     checked={showBatchCreate}
                     onChange={(event) => setShowBatchCreate(event.target.checked)}
-                    className="h-4 w-4 rounded border-gray-700 bg-gray-900 text-cyan-500 focus:ring-cyan-500"
+                    className="h-4 w-4 rounded border-border bg-secondary text-[var(--encore-accent-cool)] focus:ring-[var(--encore-accent-cool)]"
                   />
                   Create album and batch tracks now
                 </label>
                 {showBatchCreate && (
                   <div className="mt-4 grid gap-4 md:grid-cols-2">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-gray-500">
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
                       Album Title
                     </label>
                     <input
                       placeholder="Album title"
                       value={albumTitle}
                       onChange={(event) => setAlbumTitle(event.target.value)}
-                      className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none"
+                      className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-gray-500">
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
                       Release Date
                     </label>
                     <input
@@ -1225,11 +1226,11 @@ export function ArtistAdminModal({
                       onChange={(event) =>
                         setAlbumReleaseDate(event.target.value)
                       }
-                      className="mt-2 w-full rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 focus:border-cyan-500 focus:outline-none"
+                      className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-gray-500">
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
                       Batch Tracks
                     </label>
                     <textarea
@@ -1237,9 +1238,9 @@ export function ArtistAdminModal({
                       placeholder="One track per line"
                       value={batchTracksText}
                       onChange={(event) => setBatchTracksText(event.target.value)}
-                      className="mt-2 w-full resize-none rounded-md border border-gray-800 bg-gray-950 px-3 py-2 text-sm text-gray-100 placeholder:text-gray-600 focus:border-cyan-500 focus:outline-none min-h-[180px]"
+                      className="mt-2 w-full resize-none rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none min-h-[180px]"
                     />
-                    <p className="mt-1 text-xs text-gray-500">
+                    <p className="mt-1 text-xs text-muted-foreground">
                       Tracks will be numbered from 1 in order.
                     </p>
                   </div>
@@ -1252,4 +1253,7 @@ export function ArtistAdminModal({
       </div>
     </div>
   )
+
+  if (typeof document === 'undefined') return content
+  return createPortal(content, document.body)
 }

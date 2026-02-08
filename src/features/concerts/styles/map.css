@@ -1,12 +1,12 @@
 /* Popups */
 .encore-map .maplibregl-popup-content {
-    background: var(--card);
+    background: transparent;
     color: var(--card-foreground);
-    border: 3px solid var(--border);
-    box-shadow: 4px 4px 0 var(--border);
+    border: none;
+    box-shadow: none;
     border-radius: 14px;
     padding: 0;
-    /* let ConcertCard handle padding */
+    /* let ConcertCard handle styling */
 }
 
 .encore-map .maplibregl-popup-tip {

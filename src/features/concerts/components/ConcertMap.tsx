@@ -9,6 +9,8 @@ import { hasCoords } from "@/types/concert"
 import { useConcerts } from "@/features/concerts/hooks/useConcerts"
 import ConcertCard from "@/features/concerts/components/ConcertCard"
 import { boundsFromConcerts } from "@/features/concerts/utils/bounds"
+import { parseWhen } from "@/features/concerts/utils/date"
+import { listArtists } from "@/services/artists"
 
 import "@/features/concerts/styles/map.css"
 
@@ -35,11 +37,84 @@ function EncoreMarker({ active }: { active: boolean }) {
 export default function ConcertMap() {
     const { concerts, loading, error } = useConcerts(true)
     const [selected, setSelected] = useState<Concert | null>(null)
+    const [statusFilter, setStatusFilter] = useState("all")
+    const [artistFilter, setArtistFilter] = useState("all")
+    const [searchQuery, setSearchQuery] = useState("")
+    const [fromDate, setFromDate] = useState("")
+    const [toDate, setToDate] = useState("")
+    const [artistCatalog, setArtistCatalog] = useState<Record<string, string>>({})
 
     const mapRef = useRef<MapRef | null>(null)
-    const mapStyle = "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
+    const [darkMode, setDarkMode] = useState(false)
+    const mapStyle = darkMode
+        ? "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json"
+        : "https://basemaps.cartocdn.com/gl/voyager-gl-style/style.json"
 
-    const points = useMemo(() => concerts.filter(hasCoords), [concerts])
+    const statuses = useMemo(() => {
+        const set = new Set<string>()
+        concerts.forEach((c) => {
+            if (c.status) set.add(c.status)
+        })
+        return Array.from(set).sort()
+    }, [concerts])
+
+    useEffect(() => {
+        const ac = new AbortController()
+        const loadArtists = async () => {
+            try {
+                const json = await listArtists(undefined, ac.signal)
+                if (!Array.isArray(json)) return
+                const map: Record<string, string> = {}
+                json.forEach((artist: any) => {
+                    if (artist?.id && artist?.name) {
+                        map[String(artist.id)] = String(artist.name)
+                    }
+                })
+                setArtistCatalog(map)
+            } catch {
+                // optional: fall back to IDs in the select
+            }
+        }
+        loadArtists()
+        return () => ac.abort()
+    }, [])
+
+    const artistOptions = useMemo(() => {
+        const ids = new Set<string>()
+        concerts.forEach((c) => {
+            if (c.artist_id) ids.add(String(c.artist_id))
+        })
+        return Array.from(ids)
+            .map((id) => ({ id, label: artistCatalog[id] ?? id }))
+            .sort((a, b) => a.label.localeCompare(b.label))
+    }, [concerts, artistCatalog])
+
+    const filteredConcerts = useMemo(() => {
+        const q = searchQuery.trim().toLowerCase()
+        const from = fromDate ? new Date(`${fromDate}T00:00:00`) : null
+        const to = toDate ? new Date(`${toDate}T23:59:59`) : null
+
+        return concerts.filter((c) => {
+            if (artistFilter !== "all" && String(c.artist_id) !== artistFilter) return false
+            if (statusFilter !== "all" && c.status !== statusFilter) return false
+
+            if (q) {
+                const hay = `${c.city} ${c.country}`.toLowerCase()
+                if (!hay.includes(q)) return false
+            }
+
+            if (from || to) {
+                const d = c.when ? parseWhen(c.when) : null
+                if (!d) return false
+                if (from && d < from) return false
+                if (to && d > to) return false
+            }
+
+            return true
+        })
+    }, [concerts, statusFilter, artistFilter, searchQuery, fromDate, toDate])
+
+    const points = useMemo(() => filteredConcerts.filter(hasCoords), [filteredConcerts])
 
     useEffect(() => {
         if (!mapRef.current) return
@@ -57,6 +132,23 @@ export default function ConcertMap() {
         mapRef.current.fitBounds(boundsFromConcerts(points), { padding: 70, duration: 800 })
     }, [points])
 
+    useEffect(() => {
+        const handleResize = () => mapRef.current?.resize()
+        handleResize()
+        window.addEventListener("resize", handleResize)
+        return () => window.removeEventListener("resize", handleResize)
+    }, [])
+
+    useEffect(() => {
+        const root = document.documentElement
+        const syncTheme = () => setDarkMode(root.classList.contains("dark"))
+        syncTheme()
+
+        const observer = new MutationObserver(syncTheme)
+        observer.observe(root, { attributes: true, attributeFilter: ["class"] })
+        return () => observer.disconnect()
+    }, [])
+
     const recenter = () => {
         if (!mapRef.current) return
         if (points.length === 0) return
@@ -68,19 +160,24 @@ export default function ConcertMap() {
         }
     }
 
-    return (
-        <div className="pt-16 h-[calc(100vh-4rem)] w-full">
-            <div className="px-5 pb-3">
-                {loading && <div className="text-sm text-muted-foreground">Loading concerts…</div>}
-                {error && <div className="text-sm text-red-300">Error: {error}</div>}
-                {!loading && !error && (
-                    <div className="text-sm text-muted-foreground">
-                        Showing {points.length} concert{points.length === 1 ? "" : "s"}
-                    </div>
-                )}
-            </div>
+    const clearFilters = () => {
+        setStatusFilter("all")
+        setArtistFilter("all")
+        setSearchQuery("")
+        setFromDate("")
+        setToDate("")
+    }
 
-            <div className="relative h-[calc(100%-3rem)] w-full encore-map">
+    const hasFilters =
+        statusFilter !== "all" ||
+        artistFilter !== "all" ||
+        searchQuery.trim() !== "" ||
+        fromDate !== "" ||
+        toDate !== ""
+
+    return (
+        <div className="map-shell relative w-full h-full overflow-hidden">
+            <div className="absolute inset-0 encore-map">
                 <Map
                     ref={mapRef}
                     initialViewState={{ longitude: 0, latitude: 20, zoom: 1.6 }}
@@ -113,29 +210,101 @@ export default function ConcertMap() {
                             offset={14}
                             className="encore-map-popup"
                         >
-                            <ConcertCard concert={selected} />
+                            <ConcertCard
+                                concert={selected}
+                                artistName={artistCatalog[String(selected.artist_id)]}
+                            />
                         </Popup>
                     )}
                 </Map>
+            </div>
 
-                {/* UI buttons, Encore-brutal style */}
-                <div className="absolute right-5 top-5 z-10 flex flex-col gap-2">
+            <div className="absolute left-1/2 top-6 z-10 w-[min(96vw,1100px)] -translate-x-1/2 rounded-xl border-[3px] border-border bg-card/95 p-3 relative">
+                <div className="flex flex-wrap items-end gap-2 pr-40">
+                    <div className="flex flex-col">
+                        <label className="text-xs font-semibold text-muted-foreground">Search</label>
+                        <input
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            placeholder="City or country"
+                            className="h-8 rounded-md border-[3px] border-border bg-background px-3 text-sm text-foreground focus:outline-none"
+                        />
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="text-xs font-semibold text-muted-foreground">Status</label>
+                        <select
+                            value={statusFilter}
+                            onChange={(e) => setStatusFilter(e.target.value)}
+                            className="h-8 rounded-md border-[3px] border-border bg-background px-3 text-sm text-foreground"
+                        >
+                            <option value="all">All</option>
+                            {statuses.map((s) => (
+                                <option key={s} value={s}>
+                                    {s}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="text-xs font-semibold text-muted-foreground">Artist</label>
+                        <select
+                            value={artistFilter}
+                            onChange={(e) => setArtistFilter(e.target.value)}
+                            className="h-8 rounded-md border-[3px] border-border bg-background px-3 text-sm text-foreground"
+                        >
+                            <option value="all">All artists</option>
+                            {artistOptions.map((artist) => (
+                                <option key={artist.id} value={artist.id}>
+                                    {artist.label}
+                                </option>
+                            ))}
+                        </select>
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="text-xs font-semibold text-muted-foreground">From</label>
+                        <input
+                            type="date"
+                            value={fromDate}
+                            onChange={(e) => setFromDate(e.target.value)}
+                            className="h-8 rounded-md border-[3px] border-border bg-background px-3 text-sm text-foreground"
+                        />
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="text-xs font-semibold text-muted-foreground">To</label>
+                        <input
+                            type="date"
+                            value={toDate}
+                            onChange={(e) => setToDate(e.target.value)}
+                            className="h-8 rounded-md border-[3px] border-border bg-background px-3 text-sm text-foreground"
+                        />
+                    </div>
+
+                    {hasFilters && (
+                        <button
+                            type="button"
+                            onClick={clearFilters}
+                            className="h-8 rounded-md border-[3px] border-border bg-secondary px-3 text-sm font-semibold text-foreground hover:brightness-105"
+                        >
+                            Clear
+                        </button>
+                    )}
+                </div>
+
+                {loading && <div className="mt-2 text-sm text-muted-foreground">Loading concerts…</div>}
+                {error && <div className="mt-2 text-sm text-red-300">Error: {error}</div>}
+
+                <div className="absolute right-6 top-1/2 -translate-y-1/2 flex flex-row">
                     <button
                         type="button"
-                        className="h-10 px-4 rounded-full border-[3px] border-border bg-card text-card-foreground font-extrabold
+                        className="h-9 px-3 rounded-full border-[3px] border-border bg-card text-card-foreground text-sm font-extrabold
                        [box-shadow:3px_3px_0_var(--border)] hover:-translate-y-0.5 transition-transform"
                         onClick={recenter}
                     >
                         Re-center
-                    </button>
-
-                    <button
-                        type="button"
-                        className="h-10 px-4 rounded-full border-[3px] border-border bg-secondary text-secondary-foreground font-extrabold
-                       [box-shadow:3px_3px_0_var(--border)] hover:-translate-y-0.5 transition-transform"
-                        onClick={() => setSelected(null)}
-                    >
-                        Close popup
                     </button>
                 </div>
             </div>

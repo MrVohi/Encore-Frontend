@@ -33,7 +33,7 @@ export function SearchResults({
     <div className="absolute top-full left-0 mt-2 w-full z-[60]">
       <div
         className={[
-          'bg-card text-card-foreground',
+          'theme-test-surface bg-card text-card-foreground',
           'border-[3px] border-border rounded-xl overflow-hidden',
           '[box-shadow:4px_4px_0_var(--border)]',
           'max-h-72 overflow-y-auto',

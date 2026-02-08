@@ -58,7 +58,7 @@ function Settings() {
 
   if (!user) {
     return (
-      <div className="pt-16 min-h-screen bg-[#282c34] text-white flex items-center justify-center">
+      <div className="pt-0 pb-16 min-h-screen bg-background text-foreground flex items-center justify-center">
         <div className="text-xl">Please sign in to access settings.</div>
       </div>
     )
@@ -149,15 +149,15 @@ function Settings() {
   }
 
   return (
-    <div className="relative pt-16 min-h-screen bg-[#282c34] text-white px-4 pb-16">
-      <div className="absolute inset-x-0 top-16 h-40 bg-gradient-to-b from-gray-900/80 to-transparent pointer-events-none z-0" />
-      <div className="relative z-10 max-w-4xl mx-auto p-8 space-y-6">
+    <div className="relative pt-0 pb-16 min-h-screen bg-background text-foreground px-4">
+      <div className="absolute inset-x-0 top-16 h-40 bg-gradient-to-b from-muted/60 to-transparent pointer-events-none z-0" />
+      <div className="relative z-10 max-w-4xl mx-auto p-6 sm:p-8 space-y-6">
         <div>
           <h1 className="text-3xl font-bold mb-2">Settings</h1>
-          <p className="text-gray-300">Manage your profile and account preferences.</p>
+          <p className="text-muted-foreground">Manage your profile and account preferences.</p>
         </div>
 
-        <section className="rounded-2xl bg-gray-800 p-6 shadow-md border border-gray-700">
+        <section className="rounded-2xl bg-card p-6 shadow-md border border-border">
           <h2 className="text-lg font-semibold mb-4">Profile photo</h2>
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:gap-6">
             <Avatar className="h-20 w-20">
@@ -169,13 +169,13 @@ function Settings() {
                 type="file"
                 accept="image/png,image/jpeg,image/webp"
                 onChange={(event) => setSelectedFile(event.target.files?.[0] || null)}
-                className="block w-full text-sm text-gray-300 file:mr-4 file:rounded-md file:border-0 file:bg-gray-700 file:px-4 file:py-2 file:text-sm file:font-semibold file:text-white hover:file:bg-gray-600"
+                className="block w-full text-sm text-muted-foreground file:mr-4 file:rounded-md file:border-0 file:bg-secondary file:px-4 file:py-2 file:text-sm file:font-semibold file:text-foreground hover:file:brightness-105"
               />
               <div className="flex flex-wrap items-center gap-3">
                 <button
                   type="submit"
                   disabled={saving}
-                  className="inline-flex items-center justify-center rounded-md bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-[var(--encore-accent-warm)] px-4 py-2 text-sm font-extrabold text-white hover:brightness-110 disabled:opacity-50"
                 >
                   {saving ? 'Uploading...' : 'Upload photo'}
                 </button>
@@ -183,11 +183,11 @@ function Settings() {
                   type="button"
                   onClick={handleDeleteAvatar}
                   disabled={saving}
-                  className="inline-flex items-center justify-center rounded-md border border-gray-700 bg-gray-900 px-4 py-2 text-sm text-gray-200 hover:bg-gray-700 disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-secondary px-4 py-2 text-sm font-semibold text-foreground hover:brightness-105 disabled:opacity-50"
                 >
                   Remove photo
                 </button>
-                <span className="text-xs text-gray-400">PNG, JPG, or WEBP up to 5MB.</span>
+                <span className="text-xs text-muted-foreground">PNG, JPG, or WEBP up to 5MB.</span>
               </div>
               {message && (
                 <div className="rounded-md border border-green-700 bg-green-900/40 px-3 py-2 text-sm text-green-200">
@@ -203,12 +203,12 @@ function Settings() {
           </div>
         </section>
 
-        <section className="rounded-2xl bg-gray-800 p-6 shadow-md border border-gray-700">
+        <section className="rounded-2xl bg-card p-6 shadow-md border border-border">
           <h2 className="text-lg font-semibold mb-4">Account details</h2>
-          <form onSubmit={handleProfileSave} className="space-y-4 text-sm text-gray-300">
+          <form onSubmit={handleProfileSave} className="space-y-4 text-sm text-muted-foreground">
             <div className="grid gap-4 md:grid-cols-2">
               <div>
-                <label className="block text-xs text-gray-400 mb-1" htmlFor="first_name">
+                <label className="block text-xs text-muted-foreground mb-1" htmlFor="first_name">
                   First name
                 </label>
                 <input
@@ -216,11 +216,11 @@ function Settings() {
                   type="text"
                   value={profileForm.first_name}
                   onChange={(event) => setProfileForm((prev) => ({ ...prev, first_name: event.target.value }))}
-                  className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white"
+                  className="w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                 />
               </div>
               <div>
-                <label className="block text-xs text-gray-400 mb-1" htmlFor="last_name">
+                <label className="block text-xs text-muted-foreground mb-1" htmlFor="last_name">
                   Last name
                 </label>
                 <input
@@ -228,12 +228,12 @@ function Settings() {
                   type="text"
                   value={profileForm.last_name}
                   onChange={(event) => setProfileForm((prev) => ({ ...prev, last_name: event.target.value }))}
-                  className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white"
+                  className="w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-xs text-gray-400 mb-1" htmlFor="username">
+              <label className="block text-xs text-muted-foreground mb-1" htmlFor="username">
                 Username
               </label>
               <input
@@ -241,14 +241,14 @@ function Settings() {
                 type="text"
                 value={profileForm.username}
                 onChange={(event) => setProfileForm((prev) => ({ ...prev, username: event.target.value }))}
-                className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white"
+                className="w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
               />
             </div>
-            <div className="flex items-center justify-between text-xs text-gray-400">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Email</span>
               <span>{user.email}</span>
             </div>
-            <div className="flex items-center justify-between text-xs text-gray-400">
+            <div className="flex items-center justify-between text-xs text-muted-foreground">
               <span>Email verified</span>
               <span>{user.is_email_verified ? 'Yes' : 'No'}</span>
             </div>
@@ -256,7 +256,7 @@ function Settings() {
               <button
                 type="submit"
                 disabled={profileSaving}
-                className="inline-flex items-center justify-center rounded-md bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50"
+                className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-[var(--encore-accent-warm)] px-4 py-2 text-sm font-extrabold text-white hover:brightness-110 disabled:opacity-50"
               >
                 {profileSaving ? 'Saving...' : 'Save changes'}
               </button>
@@ -270,16 +270,16 @@ function Settings() {
           </form>
         </section>
 
-        <section className="rounded-2xl bg-gray-800 p-6 shadow-md border border-gray-700">
+        <section className="rounded-2xl bg-card p-6 shadow-md border border-border">
           <h2 className="text-lg font-semibold mb-4">Change password</h2>
           {user.provider === 'google' ? (
-            <p className="text-sm text-gray-300">
+            <p className="text-sm text-muted-foreground">
               Password changes are not available for Google accounts.
             </p>
           ) : (
-            <form onSubmit={handlePasswordSave} className="space-y-4 text-sm text-gray-300">
+            <form onSubmit={handlePasswordSave} className="space-y-4 text-sm text-muted-foreground">
               <div>
-                <label className="block text-xs text-gray-400 mb-1" htmlFor="current_password">
+                <label className="block text-xs text-muted-foreground mb-1" htmlFor="current_password">
                   Current password
                 </label>
                 <input
@@ -289,12 +289,12 @@ function Settings() {
                   onChange={(event) =>
                     setPasswordForm((prev) => ({ ...prev, current_password: event.target.value }))
                   }
-                  className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white"
+                  className="w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                 />
               </div>
               <div className="grid gap-4 md:grid-cols-2">
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1" htmlFor="new_password">
+                  <label className="block text-xs text-muted-foreground mb-1" htmlFor="new_password">
                     New password
                   </label>
                   <input
@@ -304,11 +304,11 @@ function Settings() {
                     onChange={(event) =>
                       setPasswordForm((prev) => ({ ...prev, new_password: event.target.value }))
                     }
-                    className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white"
+                    className="w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
                 </div>
                 <div>
-                  <label className="block text-xs text-gray-400 mb-1" htmlFor="confirm_password">
+                  <label className="block text-xs text-muted-foreground mb-1" htmlFor="confirm_password">
                     Confirm password
                   </label>
                   <input
@@ -318,7 +318,7 @@ function Settings() {
                     onChange={(event) =>
                       setPasswordForm((prev) => ({ ...prev, confirm_password: event.target.value }))
                     }
-                    className="w-full rounded-md border border-gray-700 bg-gray-800 px-3 py-2 text-sm text-white"
+                    className="w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
                 </div>
               </div>
@@ -326,7 +326,7 @@ function Settings() {
                 <button
                   type="submit"
                   disabled={passwordSaving}
-                  className="inline-flex items-center justify-center rounded-md bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700 disabled:opacity-50"
+                  className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-[var(--encore-accent-warm)] px-4 py-2 text-sm font-extrabold text-white hover:brightness-110 disabled:opacity-50"
                 >
                   {passwordSaving ? 'Updating...' : 'Update password'}
                 </button>

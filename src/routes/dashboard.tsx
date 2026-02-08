@@ -40,9 +40,9 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="pt-24 min-h-screen bg-[#1f232b] text-white py-10 px-4">
+    <div className="pt-0 pb-16 min-h-screen bg-background text-foreground px-4">
       <div className="max-w-5xl mx-auto space-y-6">
-        <section className="rounded-2xl bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 p-6 shadow-lg border border-gray-800">
+        <section className="rounded-2xl bg-card p-6 shadow-lg border border-border">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex items-center gap-5">
               <Avatar className="h-16 w-16 text-2xl">
@@ -51,21 +51,23 @@ export default function Dashboard() {
               </Avatar>
               <div>
                 <h1 className="text-3xl font-bold">Profile</h1>
-                <p className="text-gray-300">
+                <p className="text-muted-foreground">
                   {user.first_name || user.last_name
                     ? `${user.first_name} ${user.last_name}`.trim()
                     : user.username || user.email.split('@')[0]}
                 </p>
-                <p className="text-sm text-gray-400">{user.email}</p>
+                <p className="text-sm text-muted-foreground">{user.email}</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-3">
               {user.is_email_verified ? (
-                <span className="inline-flex items-center rounded-full border border-green-700 bg-green-900/40 px-3 py-1 text-xs text-green-300">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[var(--encore-primary)] bg-[var(--encore-bg-cream)] px-3 py-1 text-xs text-[var(--encore-text-dark)]">
+                  <span className="inline-flex h-2 w-2 rounded-full bg-emerald-500" />
                   Email verified
                 </span>
               ) : (
-                <span className="inline-flex items-center rounded-full border border-yellow-700 bg-yellow-900/30 px-3 py-1 text-xs text-yellow-300">
+                <span className="inline-flex items-center gap-2 rounded-full border border-[color-mix(in_oklab,var(--encore-accent-warm)_55%,var(--border))] bg-[color-mix(in_oklab,var(--encore-accent-warm)_12%,var(--encore-bg-cream))] px-3 py-1 text-xs text-[var(--encore-text-dark)]">
+                  <span className="inline-flex h-2 w-2 rounded-full bg-[var(--encore-accent-warm)]" />
                   Email not verified
                 </span>
               )}
@@ -74,15 +76,15 @@ export default function Dashboard() {
         </section>
 
         <section className="grid gap-6 md:grid-cols-3">
-          <div className="rounded-2xl bg-gray-800 p-6 shadow-md border border-gray-700">
+          <div className="rounded-2xl bg-card p-6 shadow-md border border-border">
             <h2 className="text-lg font-semibold mb-3">Account details</h2>
-            <div className="space-y-2 text-sm text-gray-300">
+            <div className="space-y-2 text-sm text-muted-foreground">
               <div className="flex items-center justify-between">
-                <span className="text-gray-400">Email</span>
+                <span className="text-muted-foreground">Email</span>
                 <span>{user.email}</span>
               </div>
               <div className="flex items-center justify-between">
-                <span className="text-gray-400">Member since</span>
+                <span className="text-muted-foreground">Member since</span>
                 <span>
                   {user.created_at && !Number.isNaN(Date.parse(user.created_at))
                     ? new Date(user.created_at).toLocaleDateString('en-US')
@@ -92,17 +94,20 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="rounded-2xl bg-gray-800 p-6 shadow-md border border-gray-700">
+          <div className="rounded-2xl bg-card p-6 shadow-md border border-border">
             <h2 className="text-lg font-semibold mb-3">Verification</h2>
-            <p className="text-sm text-gray-300 mb-4">
+            <p className="text-sm text-muted-foreground mb-4">
               Verified accounts can access checkout and ticket purchases.
             </p>
             {user.is_email_verified ? (
-              <div className="rounded-lg border border-green-700 bg-green-900/30 px-3 py-2 text-sm text-green-200">
-                Your email is verified.
+              <div className="rounded-lg border border-[var(--encore-primary)] bg-[var(--encore-bg-cream)] px-3 py-2 text-sm text-[var(--encore-text-dark)]">
+                <div className="flex items-center gap-2">
+                  <span className="inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
+                  Your email is verified.
+                </div>
               </div>
             ) : (
-              <div className="rounded-lg border border-yellow-700 bg-yellow-900/30 px-3 py-2 text-sm text-yellow-200">
+              <div className="rounded-lg border border-[color-mix(in_oklab,var(--encore-accent-warm)_55%,var(--border))] bg-[color-mix(in_oklab,var(--encore-accent-warm)_12%,var(--encore-bg-cream))] px-3 py-2 text-sm text-[var(--encore-text-dark)]">
                 Please verify your email to unlock payments.
               </div>
             )}
@@ -110,7 +115,7 @@ export default function Dashboard() {
               <div className="mt-4">
                 <Link
                   to="/verify-email"
-                  className="inline-flex items-center justify-center rounded-md bg-cyan-600 px-4 py-2 text-sm font-medium text-white hover:bg-cyan-700"
+                  className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-[var(--encore-accent-warm)] px-4 py-2 text-sm font-extrabold text-white hover:brightness-110"
                 >
                   Verify email
                 </Link>
@@ -118,18 +123,18 @@ export default function Dashboard() {
             )}
           </div>
 
-          <div className="rounded-2xl bg-gray-800 p-6 shadow-md border border-gray-700">
+          <div className="rounded-2xl bg-card p-6 shadow-md border border-border">
             <h2 className="text-lg font-semibold mb-3">Quick actions</h2>
             <div className="flex flex-col gap-3">
               <Link
                 to="/settings"
-                className="inline-flex items-center justify-center rounded-md border border-gray-700 bg-gray-900 px-4 py-2 text-sm text-gray-200 hover:bg-gray-700"
+                className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-secondary px-4 py-2 text-sm font-semibold text-foreground hover:brightness-105"
               >
                 Edit settings
               </Link>
               <button
                 onClick={handleLogout}
-                className="inline-flex items-center justify-center rounded-md bg-red-600 px-4 py-2 text-sm font-medium text-white hover:bg-red-700"
+                className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
               >
                 Sign out
               </button>

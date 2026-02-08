@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256" role="img" aria-label="Encore logo: map pin record">
+  <title>Encore — Pin Record</title>
+  <g fill="none" stroke="#f7f1e8" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M128 30c-44 0-78 34-78 78 0 60 78 118 78 118s78-58 78-118c0-44-34-78-78-78z" stroke-width="12"/>
+    <circle cx="128" cy="108" r="44" stroke-width="12"/>
+    <circle cx="128" cy="108" r="28" stroke-width="8" opacity=".55"/>
+    <circle cx="128" cy="108" r="18" stroke-width="8" opacity=".55"/>
+    <circle cx="128" cy="108" r="7" stroke-width="8" opacity=".85"/>
+    <path d="M154 92l14-8" stroke-width="10" opacity=".75"/>
+  </g>
+</svg>

@@ -11,8 +11,8 @@ function LoginPage() {
 
   if (loading) {
     return (
-      <div className="pt-16 min-h-screen bg-[#282c34] text-white flex items-center justify-center">
-        <div className="text-xl">Chargement...</div>
+      <div className="pt-0 min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="text-xl font-semibold">Chargement...</div>
       </div>
     )
   }

@@ -88,38 +88,39 @@ export default function VerifyEmail() {
   }
 
   return (
-    <div className="pt-16 min-h-screen flex items-center justify-center bg-[#282c34] py-12 px-4">
-      <div className="max-w-md w-full bg-gray-800 p-8 rounded-lg shadow-md text-center">
-        <h2 className="text-3xl font-extrabold text-white mb-6">
+    <div className="artists-encore min-h-screen text-foreground flex items-start justify-center overflow-x-hidden pt-0 pb-16 px-4">
+      <div className="artists-vignette" aria-hidden="true" />
+      <div className="relative z-10 mt-6 max-w-md w-full bg-card p-8 rounded-xl border-[3px] border-border [box-shadow:4px_4px_0_var(--border)] text-center">
+        <h2 className="text-3xl font-extrabold text-foreground mb-6">
           Email Verification
         </h2>
 
         {status === 'loading' && (
-          <p className="text-gray-400">Verifying...</p>
+          <p className="text-muted-foreground">Verifying...</p>
         )}
 
         {status === 'success' && (
           <div>
-            <div className="bg-green-900 border border-green-700 text-green-200 px-4 py-3 rounded mb-6">
+            <div className="border border-[color-mix(in_oklab,var(--encore-accent-warm)_55%,var(--border))] bg-[color-mix(in_oklab,var(--encore-accent-warm)_12%,var(--card))] text-foreground px-4 py-3 rounded mb-6">
               {message}
             </div>
-              <Link
-                to="/"
-                className="inline-block px-6 py-3 bg-cyan-600 text-white rounded-md hover:bg-cyan-700"
-              >
-                Continue
-              </Link>
-            </div>
-          )}
+            <Link
+              to="/"
+              className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-[var(--encore-accent-warm)] px-6 py-3 text-sm font-extrabold text-white hover:brightness-110"
+            >
+              Continue
+            </Link>
+          </div>
+        )}
 
         {status === 'awaiting' && (
           <div>
-            <div className="bg-blue-900 border border-blue-700 text-blue-200 px-4 py-3 rounded mb-6">
+            <div className="border border-[color-mix(in_oklab,var(--encore-accent-warm)_55%,var(--border))] bg-[color-mix(in_oklab,var(--encore-accent-warm)_12%,var(--card))] text-foreground px-4 py-3 rounded mb-6">
               {message}
             </div>
 
             <form onSubmit={handleResend} className="space-y-4 text-left">
-              <label className="block text-sm font-medium text-gray-300" htmlFor="email">
+              <label className="block text-sm font-medium text-muted-foreground" htmlFor="email">
                 Resend verification email
               </label>
               <input
@@ -129,12 +130,12 @@ export default function VerifyEmail() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                className="mt-1 block w-full px-3 py-2 bg-background border-[3px] border-border text-foreground rounded-md shadow-sm focus:outline-none focus:ring-0"
               />
               <button
                 type="submit"
                 disabled={resendStatus === 'loading'}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50"
+                className="w-full flex justify-center py-2 px-4 border-[3px] border-border rounded-md shadow-sm text-sm font-extrabold text-white bg-[var(--encore-accent-warm)] hover:brightness-110 focus:outline-none disabled:opacity-50"
               >
                 {resendStatus === 'loading' ? 'Sending...' : 'Resend'}
               </button>
@@ -142,8 +143,8 @@ export default function VerifyEmail() {
                 <div
                   className={
                     resendStatus === 'success'
-                      ? 'bg-green-900 border border-green-700 text-green-200 px-4 py-3 rounded'
-                      : 'bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded'
+                      ? 'border border-[color-mix(in_oklab,var(--encore-accent-warm)_55%,var(--border))] bg-[color-mix(in_oklab,var(--encore-accent-warm)_12%,var(--card))] text-foreground px-4 py-3 rounded'
+                      : 'border border-red-700 bg-red-900/30 text-red-200 px-4 py-3 rounded'
                   }
                 >
                   {resendMessage}
@@ -154,7 +155,7 @@ export default function VerifyEmail() {
             <div className="mt-6">
               <Link
                 to={LoginRoute.to}
-                className="inline-block px-6 py-3 bg-cyan-600 text-white rounded-md hover:bg-cyan-700"
+                className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-secondary px-6 py-3 text-sm font-semibold text-foreground hover:brightness-105"
               >
                 Back to sign in
               </Link>
@@ -164,12 +165,12 @@ export default function VerifyEmail() {
 
         {status === 'error' && (
           <div>
-            <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded mb-6">
+            <div className="border border-red-700 bg-red-900/30 text-red-200 px-4 py-3 rounded mb-6">
               {message}
             </div>
 
             <form onSubmit={handleResend} className="space-y-4 text-left">
-              <label className="block text-sm font-medium text-gray-300" htmlFor="email">
+              <label className="block text-sm font-medium text-muted-foreground" htmlFor="email">
                 Resend verification email
               </label>
               <input
@@ -179,12 +180,12 @@ export default function VerifyEmail() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                className="mt-1 block w-full px-3 py-2 bg-background border-[3px] border-border text-foreground rounded-md shadow-sm focus:outline-none focus:ring-0"
               />
               <button
                 type="submit"
                 disabled={resendStatus === 'loading'}
-                className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50"
+                className="w-full flex justify-center py-2 px-4 border-[3px] border-border rounded-md shadow-sm text-sm font-extrabold text-white bg-[var(--encore-accent-warm)] hover:brightness-110 focus:outline-none disabled:opacity-50"
               >
                 {resendStatus === 'loading' ? 'Sending...' : 'Resend'}
               </button>
@@ -192,8 +193,8 @@ export default function VerifyEmail() {
                 <div
                   className={
                     resendStatus === 'success'
-                      ? 'bg-green-900 border border-green-700 text-green-200 px-4 py-3 rounded'
-                      : 'bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded'
+                      ? 'border border-[color-mix(in_oklab,var(--encore-accent-warm)_55%,var(--border))] bg-[color-mix(in_oklab,var(--encore-accent-warm)_12%,var(--card))] text-foreground px-4 py-3 rounded'
+                      : 'border border-red-700 bg-red-900/30 text-red-200 px-4 py-3 rounded'
                   }
                 >
                   {resendMessage}
@@ -204,7 +205,7 @@ export default function VerifyEmail() {
             <div className="mt-6">
               <Link
                 to={LoginRoute.to}
-                className="inline-block px-6 py-3 bg-cyan-600 text-white rounded-md hover:bg-cyan-700"
+                className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-secondary px-6 py-3 text-sm font-semibold text-foreground hover:brightness-105"
               >
                 Back to sign in
               </Link>

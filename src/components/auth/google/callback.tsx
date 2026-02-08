@@ -36,17 +36,17 @@ export default function GoogleCallback() {
   }, [code, navigate])
 
   return (
-    <div className="pt-16 min-h-screen flex items-center justify-center bg-[#282c34]">
-      <div className="bg-gray-800 p-8 rounded-lg shadow-md text-center">
+    <div className="pt-0 min-h-screen flex items-center justify-center bg-background text-foreground">
+      <div className="bg-card p-8 rounded-xl border-[3px] border-border [box-shadow:4px_4px_0_var(--border)] text-center">
         {error ? (
           <div>
-            <h2 className="text-2xl font-bold text-white mb-4">Error</h2>
-            <p className="text-red-400">{error}</p>
+            <h2 className="text-2xl font-bold text-foreground mb-4">Error</h2>
+            <p className="text-red-600">{error}</p>
           </div>
         ) : (
           <div>
-            <h2 className="text-2xl font-bold text-white mb-4">Signing you in...</h2>
-            <p className="text-gray-400">Please wait</p>
+            <h2 className="text-2xl font-bold text-foreground mb-4">Signing you in...</h2>
+            <p className="text-muted-foreground">Please wait</p>
           </div>
         )}
       </div>

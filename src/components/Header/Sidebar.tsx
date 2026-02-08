@@ -14,52 +14,67 @@ export default function Sidebar() {
   const { user } = useAuth()
 
   return (
-    <aside className="fixed top-16 left-0 h-[calc(100vh-4rem)] w-80 bg-card text-card-foreground border-r-[3px] border-border shadow-2xl z-50 flex flex-col">
-      <nav className="flex-1 p-4 overflow-y-auto">
+    <aside className="app-sidebar theme-test-sidebar w-80 text-card-foreground border-r-[3px] border-border shadow-2xl flex flex-col">
+      <nav className="theme-test-nav flex-1 p-4 overflow-y-auto">
         <Link
           to="/"
-          className={`${baseItem} ${hoverItem}`}
-          activeProps={{ className: `${baseItem} ${activeItem}` }}
+          className={`theme-test-nav-link ${baseItem} ${hoverItem}`}
+          activeProps={{ className: `theme-test-nav-link ${baseItem} ${activeItem}` }}
         >
           <Home size={20} />
-          <span className="font-medium">Home</span>
+          <span className="theme-test-nav-text">
+            <span className="theme-test-nav-main">Home</span>
+            <span className="theme-test-nav-sub">catalog</span>
+          </span>
         </Link>
 
         <Link
           to="/followed"
-          className={`${baseItem} ${hoverItem}`}
-          activeProps={{ className: `${baseItem} ${activeItem}` }}
+          className={`theme-test-nav-link ${baseItem} ${hoverItem}`}
+          activeProps={{ className: `theme-test-nav-link ${baseItem} ${activeItem}` }}
         >
           <Heart size={20} />
-          <span className="font-medium">Followed</span>
+          <span className="theme-test-nav-text">
+            <span className="theme-test-nav-main">Followed</span>
+            <span className="theme-test-nav-sub">saved</span>
+          </span>
         </Link>
 
         <Link
           to="/tickets"
-          className={`${baseItem} ${hoverItem}`}
-          activeProps={{ className: `${baseItem} ${activeItem}` }}
+          className={`theme-test-nav-link ${baseItem} ${hoverItem}`}
+          activeProps={{ className: `theme-test-nav-link ${baseItem} ${activeItem}` }}
         >
           <Ticket size={20} />
-          <span className="font-medium">Tickets</span>
+          <span className="theme-test-nav-text">
+            <span className="theme-test-nav-main">Tickets</span>
+            <span className="theme-test-nav-sub">buy</span>
+          </span>
         </Link>
 
         <Link
           to="/map"
-          className={`${baseItem} ${hoverItem}`}
-          activeProps={{ className: `${baseItem} ${activeItem}` }}
+          className={`theme-test-nav-link ${baseItem} ${hoverItem}`}
+          activeProps={{ className: `theme-test-nav-link ${baseItem} ${activeItem}` }}
         >
           <MapPinned size={20} />
-          <span className="font-medium">Concerts Map</span>
+          <span className="theme-test-nav-text">
+            <span className="theme-test-nav-main">Concerts</span>
+            <span className="theme-test-nav-sub">near</span>
+          </span>
         </Link>
 
         {user?.is_admin && (
           <Link
             to="/admin-dashboard"
-            className={`${baseItem} ${hoverItem} mt-6`}
-            activeProps={{ className: `${baseItem} ${activeItem} mt-6` }}
+            className={`theme-test-nav-link ${baseItem} ${hoverItem} mt-6`}
+            activeProps={{ className: `theme-test-nav-link ${baseItem} ${activeItem} mt-6` }}
           >
             <Home size={20} />
-            <span className="font-medium">Admin Dashboard</span>
+            <span className="theme-test-nav-text">
+              <span className="theme-test-nav-main">Admin</span>
+              <span className="theme-test-nav-sub">manage</span>
+            </span>
           </Link>
         )}
       </nav>

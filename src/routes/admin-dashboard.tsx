@@ -4,6 +4,7 @@ import { ConcertAdminModal } from '@/components/concerts-admin'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '@/integrations/auth-context'
+import { API_URL } from '@/lib/api'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -43,8 +44,6 @@ function RouteComponent() {
   const [usersLoading, setUsersLoading] = useState(false)
   const [usersError, setUsersError] = useState<string | null>(null)
 
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080/api'
-
   const placeholderArtist: Artist = {
     id: 'admin-preview',
     name: 'Sample Artist',
@@ -56,8 +55,8 @@ function RouteComponent() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-950 text-gray-100 flex items-center justify-center">
-        <p className="text-sm text-gray-400">Loading…</p>
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <p className="text-sm text-muted-foreground">Loading…</p>
       </div>
     )
   }
@@ -69,9 +68,9 @@ function RouteComponent() {
       navigate({ to: '/' })
     }
     return (
-      <div className="min-h-screen bg-gray-950 text-gray-100 flex items-center justify-center">
-        <div className="rounded-lg border border-gray-800 bg-gray-900 px-6 py-4 text-center">
-          <p className="text-sm text-gray-300">Admin access only.</p>
+      <div className="min-h-screen bg-background text-foreground flex items-center justify-center">
+        <div className="rounded-xl border-[3px] border-border bg-card px-6 py-4 text-center [box-shadow:4px_4px_0_var(--border)]">
+          <p className="text-sm text-muted-foreground">Admin access only.</p>
         </div>
       </div>
     )
@@ -85,7 +84,11 @@ function RouteComponent() {
       setUsersError(null)
 
       try {
-        const res = await fetch(`${API_URL}/users`, { signal: controller.signal })
+        const token = localStorage.getItem('access_token')
+        const res = await fetch(`${API_URL}/users`, {
+          signal: controller.signal,
+          headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+        })
         if (!res.ok) throw new Error('Failed to load users')
         const json = await res.json()
         setUsers(Array.isArray(json) ? json : [])
@@ -148,8 +151,8 @@ function RouteComponent() {
         {
           label: 'Daily Signups',
           data: usersStats.dailyCounts.map((d) => d.count),
-          borderColor: '#22d3ee',
-          backgroundColor: 'rgba(34, 211, 238, 0.15)',
+          borderColor: '#e07a5f',
+          backgroundColor: 'rgba(224, 122, 95, 0.18)',
           fill: true,
           tension: 0.35,
           pointRadius: 2,
@@ -184,17 +187,17 @@ function RouteComponent() {
   )
 
   return (
-    <div className="min-h-screen bg-gray-950 text-gray-100">
-      <div className="mx-auto w-full max-w-6xl px-6 pb-12 pt-24">
+    <div className="min-h-screen bg-background text-foreground admin-pattern">
+      <div className="mx-auto w-full max-w-6xl px-6 pb-12 pt-0">
         <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p className="text-sm uppercase tracking-widest text-gray-500">
+            <p className="text-sm uppercase tracking-widest text-muted-foreground">
               Admin
             </p>
-            <h2 className="text-2xl font-semibold text-white">
+            <h2 className="text-2xl font-semibold text-foreground">
               Dashboard Overview
             </h2>
-            <p className="mt-1 text-sm text-gray-400">
+            <p className="mt-1 text-sm text-muted-foreground">
               Manage artists, concerts, and monitor live metrics.
             </p>
           </div>
@@ -202,12 +205,12 @@ function RouteComponent() {
         </div>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+          <div className="rounded-xl border-[3px] border-border bg-card p-5 [box-shadow:4px_4px_0_var(--border)]">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-semibold text-white">
+              <h3 className="text-lg font-semibold text-foreground">
                 Admin CRUD Shortcuts
               </h3>
-              <span className="text-xs text-gray-500">
+              <span className="text-xs text-muted-foreground">
                 Fast access to core actions
               </span>
             </div>
@@ -226,18 +229,18 @@ function RouteComponent() {
               ].map((card) => (
                 <div
                   key={card.title}
-                  className="rounded-lg border border-gray-800/60 bg-gray-950/40 p-4"
+                  className="rounded-lg border-[3px] border-border bg-secondary p-4 [box-shadow:3px_3px_0_var(--border)]"
                 >
-                  <p className="text-sm font-semibold text-white">
+                  <p className="text-sm font-semibold text-foreground">
                     {card.title}
                   </p>
-                  <p className="mt-1 text-xs text-gray-500">{card.desc}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{card.desc}</p>
                   <div className="mt-3 flex flex-wrap gap-2">
                     {card.actions.map((action) => (
                       <button
                         key={action}
                         type="button"
-                        className="rounded-md border border-gray-800 bg-gray-900 px-3 py-1.5 text-xs text-gray-200 hover:border-gray-700 hover:bg-gray-800"
+                        className="rounded-md border-[3px] border-border bg-card px-3 py-1.5 text-xs font-semibold text-foreground hover:brightness-105"
                         onClick={() => {
                           if (card.title === 'Artists') {
                             if (action.toLowerCase().includes('create'))
@@ -266,13 +269,13 @@ function RouteComponent() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-gray-800 bg-gray-900 p-5">
+          <div className="rounded-xl border-[3px] border-border bg-card p-5 [box-shadow:4px_4px_0_var(--border)]">
             <div className="flex flex-wrap items-center justify-between gap-2">
-              <h3 className="text-lg font-semibold text-white">Users Created</h3>
-              <span className="text-xs text-gray-500">Last 14 days</span>
+              <h3 className="text-lg font-semibold text-foreground">Users Created</h3>
+              <span className="text-xs text-muted-foreground">Last 14 days</span>
             </div>
             {usersLoading && (
-              <p className="mt-4 text-sm text-gray-400">Loading users…</p>
+              <p className="mt-4 text-sm text-muted-foreground">Loading users…</p>
             )}
             {usersError && (
               <p className="mt-4 text-sm text-red-400">Error: {usersError}</p>
@@ -299,36 +302,36 @@ function RouteComponent() {
                   ].map((stat) => (
                     <div
                       key={stat.label}
-                      className="flex items-center justify-between rounded-lg border border-gray-800/60 bg-gray-950/40 px-4 py-3"
+                      className="flex items-center justify-between rounded-lg border-[3px] border-border bg-secondary px-4 py-3 [box-shadow:3px_3px_0_var(--border)]"
                     >
                       <div>
-                        <p className="text-sm font-medium text-gray-100">
+                        <p className="text-sm font-medium text-foreground">
                           {stat.label}
                         </p>
-                        <p className="text-xs text-gray-500">{stat.note}</p>
+                        <p className="text-xs text-muted-foreground">{stat.note}</p>
                       </div>
-                      <span className="text-lg font-semibold text-white">
+                      <span className="text-lg font-semibold text-foreground">
                         {stat.value}
                       </span>
                     </div>
                   ))}
                 </div>
                 <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                  <div className="rounded-lg border border-gray-800/60 bg-gray-950/40 px-4 py-3">
-                    <p className="text-xs uppercase tracking-widest text-gray-500">
+                  <div className="rounded-lg border-[3px] border-border bg-secondary px-4 py-3 [box-shadow:3px_3px_0_var(--border)]">
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">
                       Avg / Day
                     </p>
-                    <p className="mt-2 text-lg font-semibold text-white">
+                    <p className="mt-2 text-lg font-semibold text-foreground">
                       {usersStats.total
                         ? Math.round(usersStats.total / 14)
                         : 0}
                     </p>
                   </div>
-                  <div className="rounded-lg border border-gray-800/60 bg-gray-950/40 px-4 py-3">
-                    <p className="text-xs uppercase tracking-widest text-gray-500">
+                  <div className="rounded-lg border-[3px] border-border bg-secondary px-4 py-3 [box-shadow:3px_3px_0_var(--border)]">
+                    <p className="text-xs uppercase tracking-widest text-muted-foreground">
                       Peak Day
                     </p>
-                    <p className="mt-2 text-lg font-semibold text-white">
+                    <p className="mt-2 text-lg font-semibold text-foreground">
                       {usersStats.dailyCounts.reduce(
                         (max, d) => (d.count > max.count ? d : max),
                         { date: '--', count: 0 },
@@ -337,11 +340,11 @@ function RouteComponent() {
                   </div>
                 </div>
                 <div className="mt-4">
-                  <div className="flex items-center justify-between text-xs text-gray-500">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground">
                     <span>Daily signups (last 14 days)</span>
                     <span>Total: {usersStats.total}</span>
                   </div>
-                  <div className="mt-3 h-32 rounded-lg border border-gray-800/60 bg-gray-950/40 p-2">
+                  <div className="mt-3 h-32 rounded-lg border-[3px] border-border bg-card p-2">
                     <Line data={chartData} options={chartOptions} />
                   </div>
                 </div>

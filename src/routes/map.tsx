@@ -6,7 +6,12 @@ export const Route = createFileRoute('/map')({
 })
 
 function RouteComponent() {
-  return <div>
-    <ConcertMap />
-  </div>
+  return (
+    <div
+      className="map-page no-top-pad w-full overflow-hidden bg-background relative"
+      style={{ height: "100%" }}
+    >
+      <ConcertMap />
+    </div>
+  )
 }

@@ -56,16 +56,17 @@ export default function ResetPasswordForm() {
   }
 
   return (
-    <div className="pt-16 min-h-screen flex items-center justify-center bg-[#282c34] py-12 px-4">
-      <div className="max-w-md w-full space-y-8 bg-gray-800 p-8 rounded-lg shadow-md">
+    <div className="artists-encore min-h-screen text-foreground flex items-start justify-center overflow-x-hidden pt-0 py-12 px-4">
+      <div className="artists-vignette" aria-hidden="true" />
+      <div className="relative z-10 max-w-md w-full space-y-8 bg-card p-8 rounded-xl border-[3px] border-border [box-shadow:4px_4px_0_var(--border)]">
         <div>
-          <h2 className="text-center text-3xl font-extrabold text-white">
+          <h2 className="text-center text-3xl font-extrabold text-foreground">
             Reset your password
           </h2>
         </div>
 
         {error && (
-          <div className="bg-red-900 border border-red-700 text-red-200 px-4 py-3 rounded">
+          <div className="bg-red-900/10 border border-red-700/40 text-red-700 px-4 py-3 rounded">
             {error}
           </div>
         )}
@@ -73,7 +74,7 @@ export default function ResetPasswordForm() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label htmlFor="newPassword" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="newPassword" className="block text-sm font-medium text-muted-foreground">
                 New password
               </label>
               <input
@@ -84,12 +85,12 @@ export default function ResetPasswordForm() {
                 minLength={8}
                 value={formData.newPassword}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                className="mt-1 block w-full px-3 py-2 bg-background border-[3px] border-border text-foreground rounded-md shadow-sm focus:outline-none focus:ring-0"
               />
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300">
+              <label htmlFor="confirmPassword" className="block text-sm font-medium text-muted-foreground">
                 Confirm password
               </label>
               <input
@@ -99,7 +100,7 @@ export default function ResetPasswordForm() {
                 required
                 value={formData.confirmPassword}
                 onChange={handleChange}
-                className="mt-1 block w-full px-3 py-2 bg-gray-700 border border-gray-600 text-white rounded-md shadow-sm focus:outline-none focus:ring-cyan-500 focus:border-cyan-500"
+                className="mt-1 block w-full px-3 py-2 bg-background border-[3px] border-border text-foreground rounded-md shadow-sm focus:outline-none focus:ring-0"
               />
             </div>
           </div>
@@ -108,7 +109,7 @@ export default function ResetPasswordForm() {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-cyan-600 hover:bg-cyan-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-cyan-500 disabled:opacity-50"
+              className="w-full flex justify-center py-2 px-4 border-[3px] border-border rounded-md shadow-sm text-sm font-extrabold text-white bg-[var(--encore-accent-warm)] hover:brightness-110 focus:outline-none disabled:opacity-50"
             >
               {loading ? 'Resetting...' : 'Reset password'}
             </button>

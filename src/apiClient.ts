@@ -1,4 +1,5 @@
-const BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8080'
+const RAW_BASE_URL = import.meta.env.VITE_API_URL || '/api'
+const BASE_URL = RAW_BASE_URL.replace(/\/api\/?$/, '')
 
 export async function apiClient<T>(path: string, init?: RequestInit): Promise<T> {
   const url = path.startsWith('http') ? path : `${BASE_URL}${path}`

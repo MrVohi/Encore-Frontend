@@ -2,7 +2,8 @@ export type Artist = {
   id: string
   name: string
   genre: string
-  image_url: string
-  preview_url: string
+  image_url?: string
+  artwork_url?: string
+  preview_url?: string
   created_at: string
 }

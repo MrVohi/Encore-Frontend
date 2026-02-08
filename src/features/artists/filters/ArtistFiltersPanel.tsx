@@ -29,10 +29,23 @@ export default function ArtistFiltersPanel({
     setFilters: (next: Partial<ArtistFilters>) => void
     resetFilters: () => void
   }) {
+    const [isMounted, setIsMounted] = useState(open)
+    const [isVisible, setIsVisible] = useState(open)
 
     const [name, setName] = useState(filters.name)
     const [genre, setGenre] = useState(filters.genre)
     const [order, setOrder] = useState<ArtistOrder>(filters.order)
+
+    useEffect(() => {
+        if (open) {
+            setIsMounted(true)
+            const id = requestAnimationFrame(() => setIsVisible(true))
+            return () => cancelAnimationFrame(id)
+        }
+        setIsVisible(false)
+        const t = setTimeout(() => setIsMounted(false), 360)
+        return () => clearTimeout(t)
+    }, [open])
 
     useEffect(() => {
         setName(filters.name)
@@ -44,67 +57,67 @@ export default function ArtistFiltersPanel({
         return name !== filters.name || genre !== filters.genre || order !== filters.order
     }, [name, genre, order, filters])
 
-    if (!open) return null
+    if (!open && !isMounted) return null
 
-    const sectionTitle =
-        "text-[0.85rem] font-extrabold text-foreground uppercase tracking-wide mb-3"
+    const sectionTitle = "artists-filter-kicker"
 
     const panelShell =
-        "fixed top-16 right-0 z-50 h-[calc(100vh-4rem)] w-[min(92vw,320px)] " +
-        "bg-card text-card-foreground border-l-[3px] border-border shadow-2xl"
+        "artists-filter-panel fixed top-16 right-0 z-50 h-[calc(100vh-4rem)] w-[min(92vw,320px)] " +
+        "transition-transform duration-300 ease-out will-change-transform " +
+        (isVisible ? "translate-x-0" : "translate-x-4 pointer-events-none")
 
     const brutalCard =
-        "border-[3px] border-border rounded-xl bg-card " +
-        "[box-shadow:4px_4px_0_var(--border)]"
+        "artists-filter-card"
 
     const chipBase =
-        "px-3 py-1.5 rounded-full text-xs font-extrabold border-2 border-border transition-colors"
+        "artists-filter-chip"
 
-    const chipActive = "bg-foreground text-background"
-    const chipIdle = "bg-transparent text-foreground hover:bg-muted"
+    const chipActive = "artists-filter-chip-active"
+    const chipIdle = "artists-filter-chip-idle"
 
     return (
         <>
             {/* Backdrop */}
             <button
-                className="fixed inset-0 top-16 z-40 bg-black/25"
+                className={[
+                    "artists-filter-backdrop fixed inset-0 top-16 z-40 transition-opacity duration-200",
+                    isVisible ? "opacity-100" : "opacity-0 pointer-events-none",
+                ].join(" ")}
                 onClick={onClose}
                 aria-label="Close filters"
             />
 
             {/* Panel */}
             <aside className={panelShell}>
-                <div className="p-5 flex items-center justify-between border-b-[3px] border-border">
-                    <div className="font-extrabold text-lg">Filters</div>
+                <div className="artists-filter-head">
+                    <div className="artists-filter-title">Filters</div>
 
                     <button
                         onClick={onClose}
-                        className="h-9 px-3 rounded-full border-[3px] border-border bg-secondary text-foreground font-extrabold
-                       [box-shadow:3px_3px_0_var(--border)] hover:-translate-y-0.5 transition-transform"
+                        className="artists-filter-close"
                     >
                         Close
                     </button>
                 </div>
 
-                <div className="p-5 space-y-5 overflow-auto h-full">
+                <div className="artists-filter-body">
                     {/* Name */}
-                    <section className={brutalCard + " p-4"}>
+                    <section className={brutalCard}>
                         <div className={sectionTitle}>Name</div>
                         <div className="relative">
                             <input
                                 value={name}
                                 onChange={(e) => setName(e.target.value)}
                                 placeholder="Search by name…"
-                                className="w-full h-10 rounded-full bg-background border-[3px] border-border px-4 text-sm font-semibold
-                           focus-visible:outline-none focus-visible:ring-0"
+                                className="artists-filter-input"
                             />
                         </div>
                     </section>
 
                     {/* Genre chips (like sample) */}
-                    <section className={brutalCard + " p-4"}>
+                    <section className={brutalCard}>
                         <div className={sectionTitle}>Genre</div>
-                        <div className="flex flex-wrap gap-2">
+                        <div className="artists-filter-chips">
                             {GENRES.map((g) => (
                                 <button
                                     key={g}
@@ -122,10 +135,10 @@ export default function ArtistFiltersPanel({
                     </section>
 
                     {/* Order radio (like sample radio dots) */}
-                    <section className={brutalCard + " p-4"}>
+                    <section className={brutalCard}>
                         <div className={sectionTitle}>Order</div>
 
-                        <div className="space-y-3">
+                        <div className="artists-filter-rows">
                             {ORDERS.map((o) => {
                                 const selected = order === o.value
                                 return (
@@ -133,18 +146,18 @@ export default function ArtistFiltersPanel({
                                         key={o.value}
                                         type="button"
                                         onClick={() => setOrder(o.value)}
-                                        className="w-full flex items-center gap-3 text-left"
+                                        className="artists-filter-row"
                                     >
                                         <div
                                             className={[
-                                                "h-5 w-5 rounded-full border-[3px] flex items-center justify-center transition-colors",
-                                                selected ? "border-[var(--encore-accent-warm)] bg-[var(--encore-accent-warm)]" : "border-border bg-transparent",
+                                                "artists-filter-dot",
+                                                selected ? "artists-filter-dot-active" : "artists-filter-dot-idle",
                                             ].join(" ")}
                                         >
-                                            {selected ? <div className="h-2 w-2 rounded-full bg-white" /> : null}
+                                            {selected ? <div className="artists-filter-dot-inner" /> : null}
                                         </div>
 
-                                        <div className="font-semibold">{o.label}</div>
+                                        <div className="artists-filter-row-text">{o.label}</div>
                                     </button>
                                 )
                             })}
@@ -152,20 +165,17 @@ export default function ArtistFiltersPanel({
                     </section>
 
                     {/* Actions */}
-                    <section className="flex gap-2">
+                    <section className="artists-filter-actions">
                         <button
                             type="button"
                             disabled={!hasChanges}
                             onClick={() => {
                                 setFilters({ name, genre, order })
-                                onClose()
                             }}
                             className={[
-                                "flex-1 h-10 rounded-full border-[3px] border-border font-extrabold",
-                                "[box-shadow:3px_3px_0_var(--border)] hover:-translate-y-0.5 transition-transform",
                                 hasChanges
-                                    ? "bg-[var(--encore-accent-warm)] text-white"
-                                    : "bg-muted text-muted-foreground cursor-not-allowed",
+                                    ? "artists-filter-apply"
+                                    : "artists-filter-apply artists-filter-apply-disabled",
                             ].join(" ")}
                         >
                             Apply
@@ -175,10 +185,8 @@ export default function ArtistFiltersPanel({
                             type="button"
                             onClick={() => {
                                 resetFilters()
-                                onClose()
                             }}
-                            className="flex-1 h-10 rounded-full border-[3px] border-border bg-secondary text-foreground font-extrabold
-                         [box-shadow:3px_3px_0_var(--border)] hover:-translate-y-0.5 transition-transform"
+                            className="artists-filter-clear"
                         >
                             Clear
                         </button>

@@ -26,9 +26,14 @@ function RootComponent() {
 
   return (
     <>
-      <Header onSelectArtist={(a) => setSelected(a)} />
-      <Outlet />
-      <ArtistPopup artist={selected} open={selected !== null} onClose={() => setSelected(null)} />
+      <div className="theme-test theme-test-mock app-shell">
+        <div className="theme-test-decor" aria-hidden="true" />
+        <Header onSelectArtist={(a) => setSelected(a)} />
+        <main className="app-content">
+          <Outlet />
+        </main>
+        <ArtistPopup artist={selected} open={selected !== null} onClose={() => setSelected(null)} />
+      </div>
 
       <TanStackDevtools
         config={{ position: "bottom-right" }}
