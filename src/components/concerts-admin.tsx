@@ -41,6 +41,11 @@ export function ConcertAdminModal({
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
 
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('access_token')
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
   const [form, setForm] = useState({
     artist_id: '',
     when: '',
@@ -239,13 +244,14 @@ export function ConcertAdminModal({
         throw new Error('Artist ID is required.')
       }
 
+      const authHeader = getAuthHeader()
       const normalizedWhen = form.when
         ? form.when.replace('T', ' ').replace(/:00$/, ':00').replace(/:([0-9]{2})$/, ':$1:00')
         : form.when
 
       const res = await fetch(`${API_URL}/artists/${form.artist_id}/concerts`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
           when: normalizedWhen,
           city: form.city,
@@ -278,6 +284,7 @@ export function ConcertAdminModal({
     setSuccess(null)
 
     try {
+      const authHeader = getAuthHeader()
       const normalizedWhen = form.when
         ? form.when
             .replace('T', ' ')
@@ -286,7 +293,7 @@ export function ConcertAdminModal({
 
       const res = await fetch(`${API_URL}/concerts/${selectedConcertId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
           when: normalizedWhen,
           city: form.city,
@@ -330,8 +337,10 @@ export function ConcertAdminModal({
     setSuccess(null)
 
     try {
+      const authHeader = getAuthHeader()
       const res = await fetch(`${API_URL}/concerts/${selectedConcertId}`, {
         method: 'DELETE',
+        headers: authHeader,
       })
       if (!res.ok) throw new Error('Failed to delete concert')
       setSuccess('Concert deleted successfully.')
@@ -347,7 +356,7 @@ export function ConcertAdminModal({
 
   const content = (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 py-8">
-      <div className="relative w-full max-w-4xl rounded-2xl border border-border bg-card text-foreground shadow-2xl admin-modal-surface">
+      <div className="relative w-full max-w-4xl rounded-2xl border border-border bg-transparent text-foreground shadow-2xl admin-modal-surface">
         <div className="flex items-start justify-between border-b border-border px-6 py-4">
           <div>
             <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -425,18 +434,26 @@ export function ConcertAdminModal({
             )}
 
             {isDelete && (
-              <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4">
+              <div
+                className="rounded-xl border border-destructive/40 bg-secondary p-4"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    handleDeleteConcert()
+                  }
+                }}
+              >
                 <div className="flex items-center justify-between">
                   <h3 className="text-sm font-semibold text-red-700">
                     Delete Concert
                   </h3>
-                  <span className="text-xs text-red-300">
+                  <span className="text-xs text-muted-foreground">
                     Removes related tickets
                   </span>
                 </div>
                 <div className="mt-4 grid gap-3">
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-red-300">
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
                       Select Concert
                     </label>
                     <select
@@ -444,7 +461,7 @@ export function ConcertAdminModal({
                       onChange={(event) =>
                         setSelectedConcertId(event.target.value)
                       }
-                      className="mt-2 w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-sm text-foreground focus:border-red-400 focus:outline-none"
+                      className="mt-2 w-full rounded-md border border-destructive/40 bg-[color-mix(in_oklab,var(--card)_82%,var(--background))] px-3 py-2 text-sm text-foreground focus:border-red-400 focus:outline-none"
                     >
                       <option value="">
                         {concertsLoading
@@ -459,12 +476,18 @@ export function ConcertAdminModal({
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs uppercase tracking-widest text-red-300">
+                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
                       Type to confirm
                     </label>
                     <input
                       value={deleteConfirm}
                       onChange={(event) => setDeleteConfirm(event.target.value)}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter') {
+                          event.preventDefault()
+                          handleDeleteConcert()
+                        }
+                      }}
                       placeholder={
                         selectedConcertId
                           ? `delete ${
@@ -484,9 +507,9 @@ export function ConcertAdminModal({
                             }`
                           : 'delete city country artist'
                       }
-                      className="mt-2 w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-sm text-foreground placeholder:text-red-300/50 focus:border-red-400 focus:outline-none"
+                      className="mt-2 w-full rounded-md border border-destructive/40 bg-[color-mix(in_oklab,var(--card)_82%,var(--background))] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-red-400 focus:outline-none"
                     />
-                    <div className="mt-1 text-xs text-red-300/70">
+                    <div className="mt-1 text-xs text-muted-foreground">
                       <p>This permanently deletes the concert.</p>
                       {selectedConcertId && (
                         <p className="mt-1 text-red-700">
@@ -508,7 +531,7 @@ export function ConcertAdminModal({
                     type="button"
                     onClick={handleDeleteConcert}
                     disabled={isSaving}
-                    className="rounded-md bg-destructive px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
+                    className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
                   >
                     {isSaving ? 'Deleting…' : 'Delete Concert'}
                   </button>

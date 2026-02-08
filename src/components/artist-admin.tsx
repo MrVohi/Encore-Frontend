@@ -107,6 +107,11 @@ export function ArtistAdminModal({
   const [deleteArtistId, setDeleteArtistId] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState('')
 
+  const getAuthHeader = () => {
+    const token = localStorage.getItem('access_token')
+    return token ? { Authorization: `Bearer ${token}` } : {}
+  }
+
   const artistSchema = z.object({
     name: z.string().min(1, 'Name is required'),
     genre: z.string().min(1, 'Genre is required'),
@@ -355,9 +360,10 @@ export function ArtistAdminModal({
     setSuccess(null)
 
     try {
+      const authHeader = getAuthHeader()
       const createRes = await fetch(`${API_URL}/artists`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
           name: data.name,
           genre: data.genre,
@@ -379,6 +385,7 @@ export function ArtistAdminModal({
           `${API_URL}/artists/${created.id}/artwork`,
           {
             method: 'POST',
+            headers: authHeader,
             body: artworkData,
           },
         )
@@ -396,6 +403,7 @@ export function ArtistAdminModal({
           `${API_URL}/artists/${created.id}/preview`,
           {
             method: 'POST',
+            headers: authHeader,
             body: previewData,
           },
         )
@@ -410,7 +418,7 @@ export function ArtistAdminModal({
           `${API_URL}/artists/${created.id}/albums`,
           {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', ...authHeader },
             body: JSON.stringify({
               title: albumTitle,
               release_date: albumReleaseDate,
@@ -432,7 +440,7 @@ export function ArtistAdminModal({
               `${API_URL}/albums/${album.id}/tracks`,
               {
                 method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json', ...authHeader },
                 body: JSON.stringify({
                   title,
                   track_no: trackNo,
@@ -466,9 +474,10 @@ export function ArtistAdminModal({
     setSuccess(null)
 
     try {
+      const authHeader = getAuthHeader()
       const updateRes = await fetch(`${API_URL}/artists/${selectedArtistId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
           name: data.name,
           genre: data.genre,
@@ -486,6 +495,7 @@ export function ArtistAdminModal({
           `${API_URL}/artists/${selectedArtistId}/artwork`,
           {
             method: 'POST',
+            headers: authHeader,
             body: artworkData,
           },
         )
@@ -501,6 +511,7 @@ export function ArtistAdminModal({
           `${API_URL}/artists/${selectedArtistId}/preview`,
           {
             method: 'POST',
+            headers: authHeader,
             body: previewData,
           },
         )
@@ -525,6 +536,8 @@ export function ArtistAdminModal({
       return
     }
 
+    setValue('artworkFile', null, { shouldValidate: true })
+    setValue('previewFile', null, { shouldValidate: true })
     setValue('name', selected.name, { shouldValidate: true })
     setValue('genre', selected.genre, { shouldValidate: true })
     setCreatedArtistId(selected.id)
@@ -551,8 +564,10 @@ export function ArtistAdminModal({
     setSuccess(null)
 
     try {
+      const authHeader = getAuthHeader()
       const res = await fetch(`${API_URL}/artists/${deleteArtistId}`, {
         method: 'DELETE',
+        headers: authHeader,
       })
 
       if (!res.ok) {
@@ -584,9 +599,10 @@ export function ArtistAdminModal({
     setSuccess(null)
 
     try {
+      const authHeader = getAuthHeader()
       const res = await fetch(`${API_URL}/artists/${createdArtistId}/albums`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
           title: albumTitle,
           release_date: albumReleaseDate,
@@ -621,10 +637,11 @@ export function ArtistAdminModal({
     setSuccess(null)
 
     try {
+      const authHeader = getAuthHeader()
       const trackNo = Number(trackNumber)
       const res = await fetch(`${API_URL}/albums/${albumId}/tracks`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', ...authHeader },
         body: JSON.stringify({
           title: trackTitle,
           track_no: Number.isFinite(trackNo) && trackNo > 0 ? trackNo : 1,
@@ -655,7 +672,7 @@ export function ArtistAdminModal({
   // We need to post for each track: title and track number (unique). It will be on /api/{artist_id}/albums/{album_id}/tracks
   const content = (
     <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 py-8">
-      <div className="relative w-full max-w-4xl rounded-2xl border border-border bg-card text-foreground shadow-2xl admin-modal-surface">
+      <div className="relative w-full max-w-4xl rounded-2xl border border-border bg-[color-mix(in_oklab,var(--theme-paper)_92%,var(--background))] text-foreground shadow-2xl admin-modal-surface">
         <div className="flex items-start justify-between border-b border-border px-6 py-4">
           <div>
             <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -728,24 +745,32 @@ export function ArtistAdminModal({
             )}
 
             {isDelete && (
-              <div className="rounded-xl border border-destructive/40 bg-destructive/10 p-4">
+              <div
+                className="rounded-xl border border-destructive/40 bg-secondary p-4"
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    handleDeleteArtist()
+                  }
+                }}
+              >
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-red-700">
                   Delete Artist
                 </h3>
-                <span className="text-xs text-red-300">
+                <span className="text-xs text-muted-foreground">
                   Removes albums & tracks
                 </span>
               </div>
               <div className="mt-4 grid gap-3">
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-red-300">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
                     Select Artist
                   </label>
                   <select
                     value={deleteArtistId}
                     onChange={(event) => setDeleteArtistId(event.target.value)}
-                    className="mt-2 w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-sm text-foreground focus:border-red-400 focus:outline-none"
+                    className="mt-2 w-full rounded-md border border-destructive/40 bg-[color-mix(in_oklab,var(--card)_82%,var(--background))] px-3 py-2 text-sm text-foreground focus:border-red-400 focus:outline-none"
                   >
                     <option value="">
                       {artistsLoading ? 'Loading artists…' : 'Choose an artist'}
@@ -758,12 +783,18 @@ export function ArtistAdminModal({
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs uppercase tracking-widest text-red-300">
+                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
                     Type to confirm
                   </label>
                   <input
                     value={deleteConfirm}
                     onChange={(event) => setDeleteConfirm(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        handleDeleteArtist()
+                      }
+                    }}
                     placeholder={
                       deleteArtistId
                         ? `delete ${
@@ -772,9 +803,9 @@ export function ArtistAdminModal({
                           }`
                         : 'delete artist-name'
                     }
-                    className="mt-2 w-full rounded-md border border-destructive/40 bg-card px-3 py-2 text-sm text-foreground placeholder:text-red-300/50 focus:border-red-400 focus:outline-none"
+                    className="mt-2 w-full rounded-md border border-destructive/40 bg-[color-mix(in_oklab,var(--card)_82%,var(--background))] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-red-400 focus:outline-none"
                   />
-                  <p className="mt-1 text-xs text-red-300/70">
+                  <p className="mt-1 text-xs text-muted-foreground">
                     This permanently deletes the artist and all related albums
                     and tracks.
                   </p>
@@ -783,7 +814,7 @@ export function ArtistAdminModal({
                   type="button"
                   onClick={handleDeleteArtist}
                   disabled={isSaving}
-                  className="rounded-md bg-destructive px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
+                  className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700 w-full mt-2"
                 >
                   {isSaving ? 'Deleting…' : 'Delete Artist'}
                 </button>
