@@ -76,7 +76,6 @@ export default function SearchBar({ onSelectArtist }: { onSelectArtist?: (a: any
         return
       }
 
-      console.warn("track selection not resolved yet")
     },
     [onSelectArtist],
   )
