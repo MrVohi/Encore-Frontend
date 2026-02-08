@@ -11,6 +11,7 @@ import ConcertCard from "@/features/concerts/components/ConcertCard"
 import { boundsFromConcerts } from "@/features/concerts/utils/bounds"
 import { parseWhen } from "@/features/concerts/utils/date"
 import { listArtists } from "@/services/artists"
+import { getCachedFollowedArtistIds, loadFollowedArtistIds } from "@/lib/following"
 
 import "@/features/concerts/styles/map.css"
 
@@ -43,6 +44,8 @@ export default function ConcertMap() {
     const [fromDate, setFromDate] = useState("")
     const [toDate, setToDate] = useState("")
     const [artistCatalog, setArtistCatalog] = useState<Record<string, string>>({})
+    const [followedOnly, setFollowedOnly] = useState(false)
+    const [followedIds, setFollowedIds] = useState<string[]>([])
 
     const mapRef = useRef<MapRef | null>(null)
     const [darkMode, setDarkMode] = useState(false)
@@ -79,12 +82,34 @@ export default function ConcertMap() {
         return () => ac.abort()
     }, [])
 
+    useEffect(() => {
+        let active = true
+        const sync = async (force = false) => {
+            const ids = await loadFollowedArtistIds(force)
+            if (!active) return
+            setFollowedIds(ids)
+        }
+        sync(false)
+        const handler = () => sync(true)
+        window.addEventListener("followed:change", handler as EventListener)
+        return () => {
+            active = false
+            window.removeEventListener("followed:change", handler as EventListener)
+        }
+    }, [])
+
     const artistOptions = useMemo(() => {
-        const ids = new Set<string>()
-        concerts.forEach((c) => {
-            if (c.artist_id) ids.add(String(c.artist_id))
-        })
-        return Array.from(ids)
+        const catalogIds = Object.keys(artistCatalog)
+        const ids = catalogIds.length
+            ? catalogIds
+            : Array.from(
+                  new Set(
+                      concerts
+                          .map((c) => (c.artist_id ? String(c.artist_id) : ""))
+                          .filter(Boolean),
+                  ),
+              )
+        return ids
             .map((id) => ({ id, label: artistCatalog[id] ?? id }))
             .sort((a, b) => a.label.localeCompare(b.label))
     }, [concerts, artistCatalog])
@@ -97,6 +122,7 @@ export default function ConcertMap() {
         return concerts.filter((c) => {
             if (artistFilter !== "all" && String(c.artist_id) !== artistFilter) return false
             if (statusFilter !== "all" && c.status !== statusFilter) return false
+            if (followedOnly && !getCachedFollowedArtistIds().includes(String(c.artist_id))) return false
 
             if (q) {
                 const hay = `${c.city} ${c.country}`.toLowerCase()
@@ -163,6 +189,7 @@ export default function ConcertMap() {
     const clearFilters = () => {
         setStatusFilter("all")
         setArtistFilter("all")
+        setFollowedOnly(false)
         setSearchQuery("")
         setFromDate("")
         setToDate("")
@@ -171,6 +198,7 @@ export default function ConcertMap() {
     const hasFilters =
         statusFilter !== "all" ||
         artistFilter !== "all" ||
+        followedOnly ||
         searchQuery.trim() !== "" ||
         fromDate !== "" ||
         toDate !== ""
@@ -261,6 +289,27 @@ export default function ConcertMap() {
                                 </option>
                             ))}
                         </select>
+                    </div>
+
+                    <div className="flex flex-col">
+                        <label className="text-xs font-semibold text-muted-foreground">Followed</label>
+                        <button
+                            type="button"
+                            onClick={() => setFollowedOnly((v) => !v)}
+                            className={[
+                                "h-8 rounded-md border-[3px] border-border px-3 text-sm font-semibold",
+                                followedOnly
+                                    ? "bg-[var(--encore-accent-warm)] text-white"
+                                    : "bg-secondary text-foreground",
+                            ].join(" ")}
+                            title={
+                                followedIds.length
+                                    ? `Following ${followedIds.length} artists`
+                                    : "You are not following any artists yet"
+                            }
+                        >
+                            {followedOnly ? "Following only" : "All artists"}
+                        </button>
                     </div>
 
                     <div className="flex flex-col">
