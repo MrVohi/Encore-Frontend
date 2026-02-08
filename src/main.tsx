@@ -8,6 +8,7 @@ import { routeTree } from './routeTree.gen'
 
 import './styles.css'
 import reportWebVitals from './reportWebVitals'
+import "./sentry"
 
 const TanStackQueryProviderContext = TanStackQueryProvider.getContext()
 
