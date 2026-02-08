@@ -2,8 +2,12 @@ import type { Artist } from "@/types/artist"
 import type { Album } from "@/types/album"
 import type { Concert } from "@/types/concert"
 import { AlbumCard } from "@/features/albums/components/AlbumCard"
+import { followArtist, getCachedFollowedArtistIds, loadFollowedArtistIds, unfollowArtist } from '@/lib/following'
+import { useNavigate } from '@tanstack/react-router'
+import { useAuth } from '@/integrations/auth-context'
+import { useEffect, useState } from "react"
+import { Heart } from 'lucide-react'
 
-// If you already have a shared util, use that instead.
 function parseWhen(when: string) {
   const d = new Date(String(when).replace(" ", "T"))
   return Number.isNaN(d.getTime()) ? null : d
@@ -63,12 +67,61 @@ export default function ArtistBackCard({
   concertsLoading: boolean
   concertsError: string | null
 }) {
+  const { user } = useAuth()
+  const navigate = useNavigate()
+  const [followed, setFollowed] = useState(false)
+
+  useEffect(() => {
+    if (!user) {
+      setFollowed(false)
+      return
+    }
+    loadFollowedArtistIds().then((ids) => {
+      setFollowed(ids.includes(String(artist.id)))
+    })
+  }, [artist.id, user])
+
+  const handleFollow = async (event: React.MouseEvent<HTMLButtonElement>) => {
+    event.stopPropagation()
+    if (!user) {
+      navigate({ to: '/login' })
+      return
+    }
+    const currentlyFollowed = getCachedFollowedArtistIds().includes(String(artist.id))
+    try {
+      if (currentlyFollowed) {
+        await unfollowArtist(artist.id)
+        setFollowed(false)
+      } else {
+        await followArtist(artist.id)
+        setFollowed(true)
+      }
+    } catch {
+      // keep previous state on error
+    }
+  }
+
   return (
     <div className="relative w-full h-full bg-card text-card-foreground border-[3px] border-border rounded-xl overflow-hidden [box-shadow:4px_4px_0_var(--border)] flex flex-col">
       {/* Header */}
-      <div className="p-4 border-b-[3px] border-border">
-        <div className="text-lg font-extrabold leading-tight">{artist.name}</div>
-        <div className="text-sm font-semibold text-muted-foreground">{artist.genre}</div>
+      <div className="p-4 border-b-[3px] border-border flex items-start justify-between gap-4">
+        <div>
+          <div className="text-lg font-extrabold leading-tight">{artist.name}</div>
+          <div className="text-sm font-semibold text-muted-foreground">{artist.genre}</div>
+        </div>
+        <button
+          type="button"
+          onClick={handleFollow}
+          className={[
+            "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold shrink-0",
+            followed
+              ? "border-[color-mix(in_oklab,var(--encore-accent-warm)_60%,var(--border))] bg-[color-mix(in_oklab,var(--encore-accent-warm)_16%,var(--card))] text-foreground"
+              : "border-border bg-card text-foreground",
+          ].join(" ")}
+        >
+          <Heart size={14} className={followed ? "fill-[var(--encore-accent-warm)]" : "fill-transparent"} />
+          {followed ? "Following" : "Follow"}
+        </button>
       </div>
 
       {/* Body */}

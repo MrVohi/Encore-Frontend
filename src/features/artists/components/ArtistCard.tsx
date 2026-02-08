@@ -190,23 +190,6 @@ export default function ArtistCard({
           <div className="text-sm font-semibold text-white/85">{artist.genre}</div>
         </div>
       </div>
-
-      <div className="flex items-center justify-between px-4 py-3">
-        <div className="text-xs font-semibold uppercase tracking-[0.15em] text-muted-foreground">Follow</div>
-        <button
-          type="button"
-          onClick={handleFollow}
-          className={[
-            "inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-xs font-semibold",
-            followed
-              ? "border-[color-mix(in_oklab,var(--encore-accent-warm)_60%,var(--border))] bg-[color-mix(in_oklab,var(--encore-accent-warm)_16%,var(--card))] text-foreground"
-              : "border-border bg-card text-foreground",
-          ].join(" ")}
-        >
-          <Heart size={14} className={followed ? "fill-[var(--encore-accent-warm)]" : "fill-transparent"} />
-          {followed ? "Following" : "Follow"}
-        </button>
-      </div>
     </div>
   )
 }

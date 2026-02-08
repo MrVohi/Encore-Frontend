@@ -27,12 +27,13 @@ export function VinylDisc({
             className={[
                 "absolute inset-0 z-[5] bg-transparent p-0 border-0 cursor-pointer",
                 "focus-visible:outline-none",
-                "transition-[transform,opacity] duration-300 ease-out",
+                "transition-[transform,opacity] ease-out",
                 visible ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
             ].join(" ")}
             style={{
                 transform: `translateX(${x})`,
                 transitionDelay: visible ? `${fadeInDelayMs}ms` : "0ms",
+                transitionDuration: out ? "520ms" : "240ms",
             }}
         >
             {/* Outer disc: crisp border + clip */}

@@ -129,6 +129,47 @@ export default function ArtistsPage() {
         }
     }, [artists, albumsEnabled])
 
+    const filteredArtists = useMemo(() => {
+        const nameQuery = filters.name.trim().toLowerCase()
+        const genreQuery = filters.genre.trim().toLowerCase()
+
+        const next = artists.filter((artist) => {
+            const nameOk = !nameQuery || artist.name.toLowerCase().includes(nameQuery)
+            const genreOk =
+                !genreQuery ||
+                genreQuery === 'all' ||
+                artist.genre.toLowerCase() === genreQuery
+            return nameOk && genreOk
+        })
+
+        const sorted = [...next]
+        switch (filters.order) {
+            case 'name_asc':
+                sorted.sort((a, b) => a.name.localeCompare(b.name))
+                break
+            case 'name_desc':
+                sorted.sort((a, b) => b.name.localeCompare(a.name))
+                break
+            case 'created_at_asc':
+                sorted.sort(
+                    (a, b) =>
+                        new Date(a.created_at).getTime() -
+                        new Date(b.created_at).getTime(),
+                )
+                break
+            case 'created_at_desc':
+            default:
+                sorted.sort(
+                    (a, b) =>
+                        new Date(b.created_at).getTime() -
+                        new Date(a.created_at).getTime(),
+                )
+                break
+        }
+
+        return sorted
+    }, [artists, filters.name, filters.genre, filters.order])
+
     const albumPreviewByArtist = useMemo(() => {
         const map: Record<string, string[]> = {}
         albums.forEach((album) => {
@@ -149,11 +190,19 @@ export default function ArtistsPage() {
         return map
     }, [albums])
 
+    const artistById = useMemo(() => {
+        const map: Record<string, Artist> = {}
+        artists.forEach((artist) => {
+            map[artist.id] = artist
+        })
+        return map
+    }, [artists])
+
     const artistCarousel = useMemo(
         () => (
             <Carousel className="w-full" opts={{ align: 'start' }}>
                 <CarouselContent className="-ml-4">
-                    {artists.map((a, i) => (
+                    {filteredArtists.map((a, i) => (
                         <CarouselItem key={a.id} className="pl-4 shrink-0 basis-full sm:basis-1/2 lg:basis-1/3 xl:basis-1/4">
                             <div className="pt-4 pl-4 pr-2 pb-8">
                                 <ArtistCard
@@ -171,7 +220,7 @@ export default function ArtistsPage() {
                 <CarouselNext />
             </Carousel>
         ),
-        [artists, albumPreviewByArtist],
+        [filteredArtists, albumPreviewByArtist],
     )
 
     const renderArtistShelf = (label: string, data: Artist[]) => (
@@ -203,7 +252,7 @@ export default function ArtistsPage() {
     )
 
     const featuredArtists = useMemo(() => {
-        if (!artists.length) return []
+        if (!filteredArtists.length) return []
         const seed = new Date().toDateString()
         const hash = (value: string) => {
             let h = 0
@@ -213,20 +262,20 @@ export default function ArtistsPage() {
             }
             return Math.abs(h)
         }
-        return [...artists]
+        return [...filteredArtists]
             .sort((a, b) => hash(a.id + seed) - hash(b.id + seed))
             .slice(0, 8)
-    }, [artists])
+    }, [filteredArtists])
 
     const newArtists = useMemo(
         () =>
-            [...artists]
+            [...filteredArtists]
                 .sort(
                     (a, b) =>
                         new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
                 )
                 .slice(0, 8),
-        [artists],
+        [filteredArtists],
     )
 
     const popularArtists = useMemo(() => {
@@ -248,10 +297,10 @@ export default function ArtistsPage() {
             return followers + tickets
         }
 
-        return [...artists]
+        return [...filteredArtists]
             .sort((a, b) => score(b) - score(a))
             .slice(0, 8)
-    }, [artists, albumCountByArtist])
+    }, [filteredArtists, albumCountByArtist])
 
     const orderLabel = useMemo(() => {
         switch (filters.order) {
@@ -304,15 +353,15 @@ export default function ArtistsPage() {
                         <InputGroupAddon className="artists-search-addon">
                             <Search />
                         </InputGroupAddon>
-                        <InputGroupInput
-                            placeholder="Search artists..."
-                            value={filters.name}
-                            onChange={(e) => setFilters({ name: e.target.value })}
-                            className="artists-search-input"
-                        />
+                    <InputGroupInput
+                        placeholder="Search artists..."
+                        value={filters.name}
+                        onChange={(e) => setFilters({ name: e.target.value })}
+                        className="artists-search-input"
+                    />
                     </InputGroup>
                     <div className="shelfmeta">
-                        <span>{artists.length} artists</span>
+                        <span>{filteredArtists.length} artists</span>
                         <span>{orderLabel}</span>
                     </div>
                 </div>
@@ -366,8 +415,15 @@ export default function ArtistsPage() {
                                 const release = album.release_date
                                     ? new Date(album.release_date).toLocaleDateString()
                                     : 'Unknown'
+                                const linkedArtist = artistById[album.artist_id]
                                 return (
-                                    <div key={album.id} className="album-record">
+                                    <div
+                                        key={album.id}
+                                        className="album-record cursor-pointer transition-transform hover:-translate-y-0.5"
+                                        onClick={() => {
+                                            if (linkedArtist) setSelectedArtist(linkedArtist)
+                                        }}
+                                    >
                                         <div className="album-record-title">{album.title}</div>
                                         <div className="album-record-meta">
                                             <span>{album.artist_name ?? 'Unknown artist'}</span>
