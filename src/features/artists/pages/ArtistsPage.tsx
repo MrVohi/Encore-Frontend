@@ -39,8 +39,8 @@ export default function ArtistsPage() {
                 if (filters.order) opts.order = orderMap[filters.order] ?? undefined
                 const json = await listArtists(opts, ac.signal)
                 if (!Array.isArray(json)) throw new Error('Unexpected response (not an array)')
-                const artists: Artist[] = json
-                setArtists(artists)
+                const nextArtists: Artist[] = json
+                setArtists(nextArtists)
             } catch (e) {
                 if (e instanceof DOMException && e.name === 'AbortError') return
                 setArtists([])
