@@ -352,7 +352,7 @@ code {
   grid-column: 1;
   grid-row: 2;
   position: sticky;
-  top: var(--header-h);
+  top: 0;
   height: calc(100vh - var(--header-h) - var(--banner-h));
   z-index: 10;
 }
