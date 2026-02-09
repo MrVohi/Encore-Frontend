@@ -9,6 +9,7 @@ import { sentryVitePlugin } from "@sentry/vite-plugin"
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), "")
   const apiTarget = env.VITE_API_PROXY_TARGET || "http://192.168.1.17:8080"
+  const proxyEnabled = (env.VITE_API_PROXY_ENABLED || "true").toLowerCase() === "true"
 
   const hasSentryCI =
     Boolean(process.env.SENTRY_AUTH_TOKEN) &&
@@ -42,12 +43,16 @@ export default defineConfig(({ mode }) => {
     server: {
       host: true,
       port: 5173,
-      proxy: {
-        "/api": {
-          target: apiTarget,
-          changeOrigin: true,
-        },
-      },
+      ...(proxyEnabled
+        ? {
+            proxy: {
+              "/api": {
+                target: apiTarget,
+                changeOrigin: true,
+              },
+            },
+          }
+        : {}),
     },
 
     build: { sourcemap: Boolean(process.env.SENTRY_AUTH_TOKEN) },
