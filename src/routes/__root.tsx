@@ -32,6 +32,9 @@ function RootComponent() {
         <main className="app-content">
           <Outlet />
         </main>
+        <div className="app-banner app-banner-bottom text-[var(--encore-text-dark)] text-sm font-semibold px-4 py-2 text-center border-t-[3px] border-border uppercase">
+          Ticket ordering is coming soon. Stay tuned for concert seat reservations.
+        </div>
         <ArtistPopup artist={selected} open={selected !== null} onClose={() => setSelected(null)} />
       </div>
 

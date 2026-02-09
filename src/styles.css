@@ -281,6 +281,7 @@ code {
 /* --- Global Themes-test Light --- */
 .theme-test {
   --header-h: 64px;
+  --banner-h: 44px;
   --theme-bg: #f2eee6;
   --theme-bg-2: #e7e0d4;
   --theme-paper: #f7f3ea;
@@ -313,12 +314,30 @@ code {
 
 .app-shell {
   display: grid;
-  grid-template-rows: var(--header-h) minmax(0, 1fr);
+  grid-template-rows: var(--header-h) minmax(0, 1fr) var(--banner-h);
   grid-template-columns: 320px 1fr;
   min-height: 100vh;
   height: 100vh;
   position: relative;
   z-index: 1;
+}
+
+.app-banner {
+  grid-column: 1 / -1;
+  z-index: 30;
+  height: var(--banner-h);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--theme-paper);
+  box-shadow: 0 -3px 0 var(--border);
+  letter-spacing: 0.08em;
+}
+
+.app-banner-bottom {
+  grid-row: 3;
+  position: sticky;
+  bottom: 0;
 }
 
 .app-header {
@@ -333,8 +352,8 @@ code {
   grid-column: 1;
   grid-row: 2;
   position: sticky;
-  top: 0;
-  height: calc(100vh - var(--header-h));
+  top: var(--header-h);
+  height: calc(100vh - var(--header-h) - var(--banner-h));
   z-index: 10;
 }
 
