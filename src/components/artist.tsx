@@ -3,6 +3,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { Heart } from 'lucide-react'
 import { useAuth } from '@/integrations/auth-context'
 import { followArtist, getCachedFollowedArtistIds, loadFollowedArtistIds, unfollowArtist } from '@/lib/following'
+import { resolveAssetUrl } from '@/lib/api'
 
 export type Artist = {
   id: string
@@ -26,8 +27,8 @@ export function ArtistCard({
   const navigate = useNavigate()
   const [followed, setFollowed] = useState(false)
 
-  const imageUrl = artist.artwork_url ?? artist.image_url ?? ''
-  const hasImageUrl = imageUrl !== 'None' && imageUrl.trim() !== ''
+  const imageUrl = resolveAssetUrl(artist.artwork_url ?? artist.image_url ?? '')
+  const hasImageUrl = imageUrl !== ''
 
   const showImage = hasImageUrl && imgOk
   const createdDate = new Date(artist.created_at)

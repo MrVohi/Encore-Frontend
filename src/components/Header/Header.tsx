@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link, useNavigate } from '@tanstack/react-router'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/integrations/auth-context'
-import { API_ORIGIN } from '@/lib/api'
+import { resolveAssetUrl } from '@/lib/api'
 import { Moon, Sun, UserCircle } from 'lucide-react'
 import logo from '@/encore-logo.svg'
 import logoLight from '@/encore-logo-light.svg'
@@ -28,11 +28,7 @@ export default function Header({ onSelectArtist }: { onSelectArtist?: (a: any) =
     return 'U'
   }, [user])
 
-  const avatarUrl = useMemo(() => {
-    if (!user?.avatar_url) return undefined
-    if (user.avatar_url.startsWith('http')) return user.avatar_url
-    return `${API_ORIGIN}${user.avatar_url}`
-  }, [user])
+  const avatarUrl = useMemo(() => resolveAssetUrl(user?.avatar_url) || undefined, [user])
 
   const displayName = useMemo(() => {
     if (!user) return 'Sign in'

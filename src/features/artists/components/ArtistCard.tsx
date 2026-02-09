@@ -4,7 +4,7 @@ import { useNavigate } from '@tanstack/react-router'
 import { useAuth } from '@/integrations/auth-context'
 import { followArtist, getCachedFollowedArtistIds, loadFollowedArtistIds, unfollowArtist } from '@/lib/following'
 import type { Artist } from '@/types/artist'
-import { isValidHttpUrl } from '../utils/url'
+import { resolveAssetUrl } from '@/lib/api'
 
 export default function ArtistCard({
   artist,
@@ -19,8 +19,8 @@ export default function ArtistCard({
   variant?: "card" | "record"
   albumPreview?: string[]
 }) {
-  const imageUrl = String(artist.artwork_url ?? artist.image_url ?? '')
-  const src = isValidHttpUrl(imageUrl) ? imageUrl.trim() : ''
+  const imageUrl = resolveAssetUrl(artist.artwork_url ?? artist.image_url ?? '')
+  const src = imageUrl.trim()
   const [imgLoaded, setImgLoaded] = useState(false)
   const [imgOk, setImgOk] = useState(true)
   const { user } = useAuth()
@@ -42,7 +42,7 @@ export default function ArtistCard({
     })
   }, [artist.id, user])
 
-  const hasImageUrl = imageUrl !== 'None' && imageUrl.trim() !== ''
+  const hasImageUrl = imageUrl !== ''
   const showImage = !!src && hasImageUrl && imgOk
 
   const gradient = useMemo(() => {

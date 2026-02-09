@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { type Artist } from './artist'
-import { API_URL } from '@/lib/api'
+import { API_URL, resolveAssetUrl } from '@/lib/api'
 
 type Track = {
   id: string
@@ -1197,8 +1197,9 @@ export function ArtistAdminModal({
                   const selected = artists.find(
                     (a) => a.id === selectedArtistId,
                   )
-                  const existingArtwork =
-                    selected?.artwork_url ?? selected?.image_url ?? ''
+                  const existingArtwork = resolveAssetUrl(
+                    selected?.artwork_url ?? selected?.image_url ?? '',
+                  )
                   const previewSrc = artworkPreviewUrl || existingArtwork
                   if (!previewSrc) return null
                   return (

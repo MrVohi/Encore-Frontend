@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { useEffect, useMemo, useState } from 'react'
 import { useAuth } from '../integrations/auth-context'
-import { API_ORIGIN, authService } from '../lib/api'
+import { authService, resolveAssetUrl } from '../lib/api'
 import { Avatar, AvatarFallback, AvatarImage } from '../components/ui/avatar'
 
 export const Route = createFileRoute('/settings')({
@@ -50,11 +50,7 @@ function Settings() {
     return 'U'
   }, [user])
 
-  const avatarUrl = useMemo(() => {
-    if (!user?.avatar_url) return undefined
-    if (user.avatar_url.startsWith('http')) return user.avatar_url
-    return `${API_ORIGIN}${user.avatar_url}`
-  }, [user])
+  const avatarUrl = useMemo(() => resolveAssetUrl(user?.avatar_url) || undefined, [user])
 
   if (!user) {
     return (

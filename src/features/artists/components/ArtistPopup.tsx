@@ -7,6 +7,7 @@ import Arrow38 from "@/components/ui/Arrow38"
 
 import useArtistAlbums from "../hooks/useArtistAlbums"
 import useArtistConcerts from "../hooks/useArtistConcerts"
+import { resolveAssetUrl } from "@/lib/api"
 
 export default function ArtistPopup({
   artist,
@@ -63,7 +64,7 @@ export default function ArtistPopup({
   }, [mounted, onClose])
 
   useEffect(() => {
-    const url = renderArtist?.preview_url
+    const url = resolveAssetUrl(renderArtist?.preview_url)
     const shouldPlay = open && !!url && vinylOut
     const stopAllAudio = (immediate = false) => {
       loopJumpedRef.current = false
@@ -231,7 +232,7 @@ export default function ArtistPopup({
     error: concertsError,
   } = useArtistConcerts(artistId, concertsEnabled)
 
-  const showVinyl = !!renderArtist?.preview_url
+  const showVinyl = !!resolveAssetUrl(renderArtist?.preview_url)
 
   if (!mounted || !renderArtist) return null
 
@@ -282,7 +283,7 @@ export default function ArtistPopup({
                 />
               )}
 
-              {renderArtist.preview_url && returned ? (
+              {resolveAssetUrl(renderArtist.preview_url) && returned ? (
                 <div
                   className={[
                     "absolute -right-64 -top-32 z-30 flex items-center gap-2 text-[14px] font-semibold text-[var(--encore-accent-warm)] rotate-2 pointer-events-none transition-opacity ease-out",

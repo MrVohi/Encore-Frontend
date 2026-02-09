@@ -1,6 +1,5 @@
-const RAW_BASE_URL = import.meta.env.VITE_API_URL || '/api'
-const BASE_URL = RAW_BASE_URL.replace(/\/api\/?$/, '')
-
+const RAW_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').trim()
+const BASE_URL = RAW_BASE_URL.replace(/\/$/, '').replace(/\/api\/?$/, '')
 export async function apiClient<T>(path: string, init?: RequestInit): Promise<T> {
   const url = path.startsWith('http') ? path : `${BASE_URL}${path}`
 

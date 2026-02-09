@@ -1,8 +1,20 @@
 import axios from 'axios'
 import type { AuthResponse, LoginData, RegisterData, User } from './auth-types'
 
-export const API_URL = import.meta.env.VITE_API_URL || '/api'
-export const API_ORIGIN = API_URL.replace(/\/api\/?$/, '')
+const RAW_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').trim()
+const BASE_URL = RAW_BASE_URL.replace(/\/$/, '').replace(/\/api\/?$/, '')
+
+export const API_URL = BASE_URL ? `${BASE_URL}/api` : '/api'
+export const API_ORIGIN = BASE_URL
+
+export const resolveAssetUrl = (value?: string | null) => {
+  const raw = String(value ?? '').trim()
+  if (!raw) return ''
+  if (raw === 'None' || raw === 'null' || raw === 'undefined') return ''
+  if (/^https?:\/\//i.test(raw)) return raw
+  if (API_ORIGIN) return raw.startsWith('/') ? `${API_ORIGIN}${raw}` : `${API_ORIGIN}/${raw}`
+  return raw.startsWith('/') ? raw : `/${raw}`
+}
 
 const api = axios.create({
   baseURL: API_URL,
