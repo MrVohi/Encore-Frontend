@@ -8,13 +8,21 @@ export const API_URL = BASE_URL ? `${BASE_URL}/api` : '/api'
 export const API_ORIGIN = BASE_URL
 
 export const resolveAssetUrl = (value?: string | null) => {
-  const raw = String(value ?? '').trim()
-  if (!raw) return ''
-  if (raw === 'None' || raw === 'null' || raw === 'undefined') return ''
+  const raw = String(value ?? "").trim()
+  if (!raw) return ""
+  if (raw === "None" || raw === "null" || raw === "undefined") return ""
+
+  try {
+    const u = new URL(raw)
+    if (u.pathname.startsWith("/uploads/")) return u.pathname + u.search
+  } catch { }
+
   if (/^https?:\/\//i.test(raw)) return raw
-  if (API_ORIGIN) return raw.startsWith('/') ? `${API_ORIGIN}${raw}` : `${API_ORIGIN}/${raw}`
-  return raw.startsWith('/') ? raw : `/${raw}`
+
+  if (API_ORIGIN) return raw.startsWith("/") ? `${API_ORIGIN}${raw}` : `${API_ORIGIN}/${raw}`
+  return raw.startsWith("/") ? raw : `/${raw}`
 }
+
 
 const api = axios.create({
   baseURL: API_URL,

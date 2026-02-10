@@ -6,6 +6,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '@/integrations/auth-context'
 import { API_URL } from '@/lib/api'
+import * as Sentry from '@sentry/react'
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -369,7 +370,17 @@ function RouteComponent() {
               Manage artists, concerts, and monitor live metrics.
             </p>
           </div>
-          <div />
+          <div>
+            <button
+              type="button"
+              onClick={() => {
+                Sentry.captureException(new Error('Front Sentry Test'))
+              }}
+              className="rounded-full border-[3px] border-border bg-card px-4 py-2 text-xs font-extrabold uppercase tracking-[0.2em] text-foreground [box-shadow:3px_3px_0_var(--border)] hover:-translate-y-0.5 transition-transform"
+            >
+              Sentry Test
+            </button>
+          </div>
         </div>
 
         <section className="mt-8 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
