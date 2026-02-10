@@ -14,6 +14,7 @@ function Tickets() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [busyId, setBusyId] = useState<string | null>(null)
+  const [message, setMessage] = useState<string>('')
 
   useEffect(() => {
     let active = true
@@ -34,6 +35,17 @@ function Tickets() {
       })
     return () => {
       active = false
+    }
+  }, [])
+
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search)
+    if (query.get('success')) {
+      setMessage('Commande validée. Vous recevrez un email de confirmation.')
+      return
+    }
+    if (query.get('canceled')) {
+      setMessage("Commande annulée — vous pouvez réessayer quand vous voulez.")
     }
   }, [])
 
@@ -88,6 +100,12 @@ function Tickets() {
         {error && (
           <section className="rounded-2xl bg-card p-4 shadow-md border border-border text-sm text-red-400">
             {error}
+          </section>
+        )}
+
+        {message && (
+          <section className="rounded-2xl bg-card p-4 shadow-md border border-border text-sm text-muted-foreground">
+            {message}
           </section>
         )}
 
