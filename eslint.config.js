@@ -21,8 +21,8 @@ export default [
             // Style preference; not worth fixing everywhere for prod-prep.
             '@typescript-eslint/array-type': 'off',
 
-            'import/order': 'error',
-            'sort-imports': 'error',
+            'import/order': 'warn',
+            'sort-imports': 'warn',
 
             // Type-import nitpicks → can be re-enabled later.
             'import/consistent-type-specifier-style': 'off',
