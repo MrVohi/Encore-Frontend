@@ -225,10 +225,11 @@ code {
     border: 3px solid hsl(var(--border));
     box-shadow: 4px 4px 0 hsl(var(--border));
   }
+
   .brutal-sm {
     border: 3px solid hsl(var(--border));
     box-shadow: 3px 3px 0 hsl(var(--border));
-  }  
+  }
 
   /* real-looking border without affecting layout */
   .brutal::before {
@@ -281,7 +282,7 @@ code {
 /* --- Global Themes-test Light --- */
 .theme-test {
   --header-h: 64px;
-  --banner-h: 44px;
+  --banner-h: 0px;
   --theme-bg: #f2eee6;
   --theme-bg-2: #e7e0d4;
   --theme-paper: #f7f3ea;
@@ -371,11 +372,11 @@ code {
   flex-direction: column;
 }
 
-.app-content > *:first-child {
+.app-content>*:first-child {
   padding-top: 12px;
 }
 
-.app-content > .no-top-pad {
+.app-content>.no-top-pad {
   padding-top: 0;
 }
 
@@ -390,7 +391,7 @@ code {
   background: transparent;
 }
 
-.app-content .map-page > * {
+.app-content .map-page>* {
   flex: 1;
   min-height: 0;
 }
@@ -416,9 +417,11 @@ code {
   .app-shell {
     grid-template-columns: 1fr;
   }
+
   .app-sidebar {
     display: none;
   }
+
   .app-content {
     grid-column: 1;
   }
@@ -538,28 +541,99 @@ code {
   mix-blend-mode: multiply;
 }
 
+/* BACKUP: previous admin modal styles
 .admin-modal-surface {
   position: relative;
   overflow: hidden;
-  background-color: color-mix(in oklab, var(--theme-paper, var(--card)) 92%, var(--background));
+  background-color: var(--background) !important;
+  background-image: none !important;
+  opacity: 1;
+  mix-blend-mode: normal;
+  border-color: color-mix(in oklab, var(--border) 80%, var(--border));
+}
+.admin-modal-surface::before { display: none; }
+.admin-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--background);
+  z-index: 0;
+}
+.admin-modal-surface > * { position: relative; z-index: 1; }
+.admin-modal-surface .admin-modal-close {
+  background: var(--primary);
+  color: #ffffff;
+  border-color: color-mix(in oklab, var(--primary) 70%, var(--border));
+}
+.admin-modal-surface .admin-modal-close:hover {
+  background: color-mix(in oklab, var(--primary) 85%, #000);
+}
+.admin-modal-surface .bg-secondary {
+  background: color-mix(in oklab, var(--secondary) 92%, var(--background));
+  border-color: var(--border);
+}
+.admin-modal-surface .bg-card { background: var(--card); }
+.admin-modal-surface input,
+.admin-modal-surface select,
+.admin-modal-surface textarea {
+  background-color: var(--card);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+.admin-modal-body { background-color: var(--background); }
+*/
+
+.admin-modal-surface {
+  position: relative;
+  overflow: hidden;
+  background-color: var(--background) !important;
+  background-image: none !important;
+  opacity: 1;
+  mix-blend-mode: normal;
+  border-color: var(--border);
 }
 
 .admin-modal-surface::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  opacity: 0.35;
-  z-index: 1;
-  background:
-    repeating-linear-gradient(135deg, color-mix(in oklab, var(--theme-border-2) 95%, transparent) 0 1px, transparent 1px 8px),
-    repeating-linear-gradient(45deg, color-mix(in oklab, var(--theme-border-2) 90%, transparent) 0 1px, transparent 1px 12px);
-  mix-blend-mode: multiply;
+  display: none;
 }
 
-.admin-modal-surface > * {
+.admin-modal-backdrop {
+  position: absolute;
+  inset: 0;
+  background: var(--background);
+  z-index: 0;
+}
+
+.admin-modal-surface>* {
   position: relative;
-  z-index: 2;
+  z-index: 1;
+}
+
+.admin-modal-surface .admin-modal-close {
+  background: var(--primary);
+  color: #000000;
+  border-color: var(--border);
+}
+
+.admin-modal-surface .admin-modal-close:hover {
+  background: var(--primary);
+}
+
+.admin-modal-surface .bg-secondary,
+.admin-modal-surface .bg-card {
+  background: var(--background);
+  border-color: var(--border);
+}
+
+.admin-modal-surface input,
+.admin-modal-surface select,
+.admin-modal-surface textarea {
+  background-color: var(--background);
+  border-color: var(--border);
+  color: var(--foreground);
+}
+
+.admin-modal-body {
+  background-color: var(--background);
 }
 
 .theme-test-mock .theme-test-nav-link {
@@ -1020,8 +1094,8 @@ code {
   background:
     radial-gradient(circle at 50% 50%, var(--artists-bg) 0 6px, transparent 7px),
     radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--artists-accent-2) 55%, transparent) 0 16px, transparent 17px),
-    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0 1px, rgba(0,0,0,0) 2px 8px),
-    radial-gradient(circle at 50% 50%, rgba(0,0,0,0.25), rgba(0,0,0,0.85));
+    repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06) 0 1px, rgba(0, 0, 0, 0) 2px 8px),
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.85));
 }
 
 .album-grid {
@@ -1075,8 +1149,8 @@ code {
   background:
     radial-gradient(circle at 50% 50%, var(--artists-bg) 0 5px, transparent 6px),
     radial-gradient(circle at 50% 50%, color-mix(in oklab, var(--artists-accent-2) 45%, transparent) 0 14px, transparent 15px),
-    repeating-radial-gradient(circle at 50% 50%, rgba(255,255,255,0.06) 0 1px, rgba(0,0,0,0) 2px 7px),
-    radial-gradient(circle at 50% 50%, rgba(0,0,0,0.18), rgba(0,0,0,0.5));
+    repeating-radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.06) 0 1px, rgba(0, 0, 0, 0) 2px 7px),
+    radial-gradient(circle at 50% 50%, rgba(0, 0, 0, 0.18), rgba(0, 0, 0, 0.5));
 }
 
 .artists-filter-backdrop {

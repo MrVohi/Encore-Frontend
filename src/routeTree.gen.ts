@@ -10,6 +10,8 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as VerifyEmailRouteImport } from './routes/verify-email'
+import { Route as TicketsSuccessRouteImport } from './routes/tickets-success'
+import { Route as TicketsCancelRouteImport } from './routes/tickets-cancel'
 import { Route as TicketsRouteImport } from './routes/tickets'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
@@ -26,6 +28,16 @@ import { Route as IndexRouteImport } from './routes/index'
 const VerifyEmailRoute = VerifyEmailRouteImport.update({
   id: '/verify-email',
   path: '/verify-email',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TicketsSuccessRoute = TicketsSuccessRouteImport.update({
+  id: '/tickets-success',
+  path: '/tickets-success',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TicketsCancelRoute = TicketsCancelRouteImport.update({
+  id: '/tickets-cancel',
+  path: '/tickets-cancel',
   getParentRoute: () => rootRouteImport,
 } as any)
 const TicketsRoute = TicketsRouteImport.update({
@@ -102,6 +114,8 @@ export interface FileRoutesByFullPath {
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
+  '/tickets-cancel': typeof TicketsCancelRoute
+  '/tickets-success': typeof TicketsSuccessRoute
   '/verify-email': typeof VerifyEmailRoute
 }
 export interface FileRoutesByTo {
@@ -117,6 +131,8 @@ export interface FileRoutesByTo {
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
+  '/tickets-cancel': typeof TicketsCancelRoute
+  '/tickets-success': typeof TicketsSuccessRoute
   '/verify-email': typeof VerifyEmailRoute
 }
 export interface FileRoutesById {
@@ -133,6 +149,8 @@ export interface FileRoutesById {
   '/reset-password': typeof ResetPasswordRoute
   '/settings': typeof SettingsRoute
   '/tickets': typeof TicketsRoute
+  '/tickets-cancel': typeof TicketsCancelRoute
+  '/tickets-success': typeof TicketsSuccessRoute
   '/verify-email': typeof VerifyEmailRoute
 }
 export interface FileRouteTypes {
@@ -150,6 +168,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/settings'
     | '/tickets'
+    | '/tickets-cancel'
+    | '/tickets-success'
     | '/verify-email'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -165,6 +185,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/settings'
     | '/tickets'
+    | '/tickets-cancel'
+    | '/tickets-success'
     | '/verify-email'
   id:
     | '__root__'
@@ -180,6 +202,8 @@ export interface FileRouteTypes {
     | '/reset-password'
     | '/settings'
     | '/tickets'
+    | '/tickets-cancel'
+    | '/tickets-success'
     | '/verify-email'
   fileRoutesById: FileRoutesById
 }
@@ -196,6 +220,8 @@ export interface RootRouteChildren {
   ResetPasswordRoute: typeof ResetPasswordRoute
   SettingsRoute: typeof SettingsRoute
   TicketsRoute: typeof TicketsRoute
+  TicketsCancelRoute: typeof TicketsCancelRoute
+  TicketsSuccessRoute: typeof TicketsSuccessRoute
   VerifyEmailRoute: typeof VerifyEmailRoute
 }
 
@@ -206,6 +232,20 @@ declare module '@tanstack/react-router' {
       path: '/verify-email'
       fullPath: '/verify-email'
       preLoaderRoute: typeof VerifyEmailRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tickets-success': {
+      id: '/tickets-success'
+      path: '/tickets-success'
+      fullPath: '/tickets-success'
+      preLoaderRoute: typeof TicketsSuccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tickets-cancel': {
+      id: '/tickets-cancel'
+      path: '/tickets-cancel'
+      fullPath: '/tickets-cancel'
+      preLoaderRoute: typeof TicketsCancelRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/tickets': {
@@ -308,6 +348,8 @@ const rootRouteChildren: RootRouteChildren = {
   ResetPasswordRoute: ResetPasswordRoute,
   SettingsRoute: SettingsRoute,
   TicketsRoute: TicketsRoute,
+  TicketsCancelRoute: TicketsCancelRoute,
+  TicketsSuccessRoute: TicketsSuccessRoute,
   VerifyEmailRoute: VerifyEmailRoute,
 }
 export const routeTree = rootRouteImport

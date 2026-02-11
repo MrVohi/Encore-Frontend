@@ -104,6 +104,7 @@ export function ArtistAdminModal({
   const [artists, setArtists] = useState<Artist[]>([])
   const [artistsLoading, setArtistsLoading] = useState(false)
   const [selectedArtistId, setSelectedArtistId] = useState('')
+  const [createArtistSeedId, setCreateArtistSeedId] = useState('')
   const [deleteArtistId, setDeleteArtistId] = useState('')
   const [deleteConfirm, setDeleteConfirm] = useState('')
 
@@ -206,6 +207,20 @@ export function ArtistAdminModal({
     loadArtists()
     return () => controller.abort()
   }, [API_URL, open])
+
+  useEffect(() => {
+    if (!open || !isCreate) {
+      setCreateArtistSeedId('')
+    }
+  }, [open, isCreate])
+
+  useEffect(() => {
+    if (!isCreate || !createArtistSeedId) return
+    const seed = artists.find((a) => a.id === createArtistSeedId)
+    if (!seed) return
+    setValue('name', seed.name ?? '', { shouldValidate: true })
+    setValue('genre', seed.genre ?? '', { shouldValidate: true })
+  }, [artists, createArtistSeedId, isCreate, setValue])
 
   useEffect(() => {
     if (!open) return
@@ -664,15 +679,13 @@ export function ArtistAdminModal({
     }
   }
 
-  // I keep artist bec I'm unsure if I'll need it (as admin will have to enter everything manually)
-  // What we need to post for artist: name, genre, image_url, and a small song preview. It is on /api/artists
-  // but for each artist, we will need their albums!
-  // It is also manual, and we need title & release_date. It will be on /api/{artist_id}/albums
-  // But what is an album without tracks?
-  // We need to post for each track: title and track number (unique). It will be on /api/{artist_id}/albums/{album_id}/tracks
   const content = (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 py-8">
-      <div className="relative w-full max-w-4xl rounded-2xl border border-border bg-[color-mix(in_oklab,var(--theme-paper)_92%,var(--background))] text-foreground shadow-2xl admin-modal-surface">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 px-4 py-8">
+      <div
+        className="relative w-full max-w-2xl rounded-2xl border border-border text-foreground shadow-2xl admin-modal-surface"
+        style={{ backgroundColor: 'var(--background)' }}
+      >
+        <div className="admin-modal-backdrop" style={{ backgroundColor: 'var(--background)' }} aria-hidden="true" />
         <div className="flex items-start justify-between border-b border-border px-6 py-4">
           <div>
             <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -684,39 +697,25 @@ export function ArtistAdminModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-border bg-secondary px-3 py-1.5 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
+            className="admin-modal-close rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:border-[var(--encore-accent-warm)] hover:bg-[var(--encore-accent-warm)] hover:text-white"
           >
             Close
           </button>
         </div>
 
-        <div
-          className={[
-            'px-6 py-6',
-            'grid gap-6 md:grid-cols-[1.1fr_0.9fr]',
-            'max-h-[80vh] overflow-y-auto',
-          ].join(' ')}
-        >
-          <section className="space-y-4">
-            {isEdit && (
-              <div className="rounded-xl border border-border bg-secondary p-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground">
-                  Edit Existing Artist
-                </h3>
-                <span className="text-xs text-muted-foreground">
-                  Load for editing
-                </span>
-              </div>
-              <div className="mt-4 grid gap-3">
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Select Artist
-                  </label>
+        <div className="px-6 py-6 space-y-4 max-h-[70vh] overflow-y-auto">
+          {error && <p className="text-xs text-red-400">{error}</p>}
+          {success && <p className="text-xs text-emerald-400">{success}</p>}
+
+          {isEdit && (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="text-xs font-semibold text-muted-foreground sm:col-span-2">
+                  Select Artist
                   <select
                     value={selectedArtistId}
                     onChange={(event) => setSelectedArtistId(event.target.value)}
-                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   >
                     <option value="">
                       {artistsLoading ? 'Loading artists…' : 'Choose an artist'}
@@ -727,50 +726,28 @@ export function ArtistAdminModal({
                       </option>
                     ))}
                   </select>
-                </div>
+                </label>
                 <button
                   type="button"
                   onClick={handleLoadArtist}
-                  className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
+                  className="rounded-md border-[3px] border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:brightness-105 sm:col-span-2"
                 >
                   Load Artist
                 </button>
-                {selectedArtistId && (
-                  <p className="text-xs text-muted-foreground">
-                    Selected ID: {selectedArtistId}
-                  </p>
-                )}
               </div>
-            </div>
-            )}
+              <div className="border-t border-border my-4" />
+            </>
+          )}
 
-            {isDelete && (
-              <div
-                className="rounded-xl border border-destructive/40 bg-secondary p-4"
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    handleDeleteArtist()
-                  }
-                }}
-              >
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-red-700">
-                  Delete Artist
-                </h3>
-                <span className="text-xs text-muted-foreground">
-                  Removes albums & tracks
-                </span>
-              </div>
-              <div className="mt-4 grid gap-3">
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Select Artist
-                  </label>
+          {isDelete && (
+            <>
+              <div className="grid gap-4">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Select Artist
                   <select
                     value={deleteArtistId}
                     onChange={(event) => setDeleteArtistId(event.target.value)}
-                    className="mt-2 w-full rounded-md border border-destructive/40 bg-[color-mix(in_oklab,var(--card)_82%,var(--background))] px-3 py-2 text-sm text-foreground focus:border-red-400 focus:outline-none"
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   >
                     <option value="">
                       {artistsLoading ? 'Loading artists…' : 'Choose an artist'}
@@ -781,11 +758,9 @@ export function ArtistAdminModal({
                       </option>
                     ))}
                   </select>
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Type to confirm
-                  </label>
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Type to confirm
                   <input
                     value={deleteConfirm}
                     onChange={(event) => setDeleteConfirm(event.target.value)}
@@ -797,490 +772,328 @@ export function ArtistAdminModal({
                     }}
                     placeholder={
                       deleteArtistId
-                        ? `delete ${
-                            artists.find((a) => a.id === deleteArtistId)?.name ??
-                            ''
-                          }`
+                        ? `delete ${artists.find((a) => a.id === deleteArtistId)?.name ??
+                        ''
+                        }`
                         : 'delete artist-name'
                     }
-                    className="mt-2 w-full rounded-md border border-destructive/40 bg-[color-mix(in_oklab,var(--card)_82%,var(--background))] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-red-400 focus:outline-none"
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
                   <p className="mt-1 text-xs text-muted-foreground">
-                    This permanently deletes the artist and all related albums
-                    and tracks.
+                    This permanently deletes the artist and all related albums and tracks.
                   </p>
-                </div>
+                </label>
+              </div>
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={() => onClose()}
+                  className="rounded-md border-[3px] border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:brightness-105"
+                >
+                  Cancel
+                </button>
                 <button
                   type="button"
                   onClick={handleDeleteArtist}
                   disabled={isSaving}
-                  className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700 w-full mt-2"
+                  className="rounded-md border-[3px] border-border bg-red-600 px-4 py-2 text-xs font-extrabold text-white [box-shadow:3px_3px_0_var(--border)] hover:bg-red-700 disabled:opacity-60"
                 >
                   {isSaving ? 'Deleting…' : 'Delete Artist'}
                 </button>
               </div>
-            </div>
-            )}
+            </>
+          )}
 
             {!isDelete && (
-              <div className="rounded-xl border border-border bg-secondary p-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground">
-                  Artist Details
-                </h3>
-                <span className="text-xs text-muted-foreground">
-                  {isEdit ? 'PUT /api/artists/:id' : 'POST /api/artists'}
-                </span>
+              <>
+                <div className="grid gap-4 sm:grid-cols-2">
+                  {isCreate && (
+                    <label className="text-xs font-semibold text-muted-foreground sm:col-span-2">
+                      Artist Name (dropdown)
+                      <select
+                        value={createArtistSeedId}
+                        onChange={(event) => setCreateArtistSeedId(event.target.value)}
+                        className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                      >
+                        <option value="">
+                          {artistsLoading ? 'Loading artists…' : 'Choose an artist (optional)'}
+                        </option>
+                        {artists.map((a) => (
+                          <option key={a.id} value={a.id}>
+                            {a.name}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Name
+                  <input
+                    placeholder="Artist name"
+                    {...register('name')}
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                  {errors.name && (
+                    <p className="mt-1 text-xs text-red-400">
+                      {errors.name.message}
+                    </p>
+                  )}
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Genre
+                  <input
+                    placeholder="Genre"
+                    {...register('genre')}
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                  {errors.genre && (
+                    <p className="mt-1 text-xs text-red-400">
+                      {errors.genre.message}
+                    </p>
+                  )}
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Artist Artwork
+                  <label
+                    className="mt-1 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground hover:border-[var(--encore-accent-cool)] hover:text-foreground"
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => handleDropFile(event, 'artwork')}
+                  >
+                    <span className="text-xs">Upload artist artwork</span>
+                    <span className="rounded-md border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
+                      Choose file
+                    </span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(event) =>
+                        setValue(
+                          'artworkFile',
+                          event.target.files?.[0] ?? null,
+                          { shouldValidate: true },
+                        )
+                      }
+                    />
+                  </label>
+                  {artworkFile && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {artworkFile.name}
+                    </p>
+                  )}
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Preview Audio
+                  <label
+                    className="mt-1 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground hover:border-[var(--encore-accent-cool)] hover:text-foreground"
+                    onDragOver={(event) => event.preventDefault()}
+                    onDrop={(event) => handleDropFile(event, 'preview')}
+                  >
+                    <span className="text-xs">Upload preview audio</span>
+                    <span className="rounded-md border border-border bg-background px-3 py-1 text-xs text-muted-foreground">
+                      Choose file
+                    </span>
+                    <input
+                      type="file"
+                      accept="audio/*"
+                      className="hidden"
+                      onChange={(event) =>
+                        setValue(
+                          'previewFile',
+                          event.target.files?.[0] ?? null,
+                          { shouldValidate: true },
+                        )
+                      }
+                    />
+                  </label>
+                  {previewFile && (
+                    <p className="mt-1 text-xs text-muted-foreground">
+                      {previewFile.name}
+                    </p>
+                  )}
+                </label>
               </div>
-              <div className="mt-4 grid gap-4 md:grid-cols-2">
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                      Name
-                    </label>
+
+              {isCreate && (
+                <>
+                  <div className="border-t border-border my-4" />
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground">
                     <input
-                      placeholder="Artist name"
-                      {...register('name')}
-                      className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
+                      type="checkbox"
+                      checked={showBatchCreate}
+                      onChange={(event) => setShowBatchCreate(event.target.checked)}
+                      className="h-4 w-4 rounded border-border bg-background"
                     />
-                    {errors.name && (
-                      <p className="mt-1 text-xs text-red-400">
-                        {errors.name.message}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                      Genre
-                    </label>
-                    <input
-                      placeholder="Genre"
-                      {...register('genre')}
-                      className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                    />
-                    {errors.genre && (
-                      <p className="mt-1 text-xs text-red-400">
-                        {errors.genre.message}
-                      </p>
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                      Preview Audio
-                    </label>
-                    <label
-                      className="mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground hover:border-[var(--encore-accent-cool)] hover:text-foreground"
-                      onDragOver={(event) => event.preventDefault()}
-                      onDrop={(event) => handleDropFile(event, 'preview')}
-                    >
-                      <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                        Drag & drop
-                      </span>
-                      <span className="text-sm text-foreground">
-                        Upload preview audio
-                      </span>
-                      <span className="rounded-md border border-border bg-secondary px-3 py-1 text-xs text-muted-foreground">
-                        Choose file
-                      </span>
+                    Create album and batch tracks now
+                  </label>
+                  {showBatchCreate && (
+                    <div className="grid gap-4 sm:grid-cols-2">
+                      <label className="text-xs font-semibold text-muted-foreground">
+                        Album Title
+                        <input
+                          placeholder="Album title"
+                          value={albumTitle}
+                          onChange={(event) => setAlbumTitle(event.target.value)}
+                          className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                        />
+                      </label>
+                      <label className="text-xs font-semibold text-muted-foreground">
+                        Release Date
+                        <input
+                          type="date"
+                          value={albumReleaseDate}
+                          onChange={(event) =>
+                            setAlbumReleaseDate(event.target.value)
+                          }
+                          className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                        />
+                      </label>
+                      <label className="text-xs font-semibold text-muted-foreground sm:col-span-2">
+                        Batch Tracks (one per line)
+                        <textarea
+                          rows={7}
+                          placeholder="One track per line"
+                          value={batchTracksText}
+                          onChange={(event) => setBatchTracksText(event.target.value)}
+                          className="mt-1 w-full resize-none rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                        />
+                      </label>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {isEdit && createdArtistId && (
+                <>
+                  <div className="border-t border-border my-4" />
+                  <div className="grid gap-4 sm:grid-cols-2">
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Album Title
                       <input
-                        type="file"
-                        accept="audio/*"
-                        className="hidden"
-                        onChange={(event) =>
-                          setValue(
-                            'previewFile',
-                            event.target.files?.[0] ?? null,
-                            { shouldValidate: true },
-                          )
-                        }
+                        placeholder="Album title"
+                        value={albumTitle}
+                        onChange={(event) => setAlbumTitle(event.target.value)}
+                        className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                       />
                     </label>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Upload a short preview clip (mp3, wav).
-                    </p>
-                    {previewFile && (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Selected: {previewFile.name}
-                      </p>
-                    )}
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                      Artist Artwork
-                    </label>
-                    <label
-                      className="mt-2 flex cursor-pointer flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-border bg-card px-4 py-6 text-center text-sm text-muted-foreground hover:border-[var(--encore-accent-cool)] hover:text-foreground"
-                      onDragOver={(event) => event.preventDefault()}
-                      onDrop={(event) => handleDropFile(event, 'artwork')}
-                    >
-                      <span className="text-xs uppercase tracking-widest text-muted-foreground">
-                        Drag & drop
-                      </span>
-                      <span className="text-sm text-foreground">
-                        Upload artist artwork
-                      </span>
-                      <span className="rounded-md border border-border bg-secondary px-3 py-1 text-xs text-muted-foreground">
-                        Choose file
-                      </span>
+                    <label className="text-xs font-semibold text-muted-foreground">
+                      Release Date
                       <input
-                        type="file"
-                        accept="image/*"
-                        className="hidden"
-                        onChange={(event) =>
-                          setValue(
-                            'artworkFile',
-                            event.target.files?.[0] ?? null,
-                            { shouldValidate: true },
-                          )
-                        }
+                        type="date"
+                        value={albumReleaseDate}
+                        onChange={(event) => setAlbumReleaseDate(event.target.value)}
+                        className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                       />
                     </label>
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Upload square cover art (jpg, png).
-                    </p>
-                    {artworkFile && (
-                      <p className="mt-1 text-xs text-muted-foreground">
-                        Selected: {artworkFile.name}
-                      </p>
-                    )}
                   </div>
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={handleAddAlbum}
+                    disabled={isSaving}
+                    className="rounded-md border-[3px] border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:brightness-105"
+                  >
+                    {isSaving ? 'Saving...' : 'Add Album'}
+                  </button>
+                  {albums.length > 0 && (
+                    <div className="space-y-3 mt-4">
+                      {albums.map((album) => (
+                        <AlbumCard key={album.id} album={album} />
+                      ))}
+                    </div>
+                  )}
+
+                  {albums.length > 0 && (
+                    <>
+                      <div className="border-t border-border my-4" />
+                      <div className="grid gap-4 sm:grid-cols-2">
+                        <label className="text-xs font-semibold text-muted-foreground sm:col-span-2">
+                          Select Album
+                          <select
+                            value={selectedTrackAlbumId}
+                            onChange={(event) =>
+                              setSelectedTrackAlbumId(event.target.value)
+                            }
+                            className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                          >
+                            <option value="">
+                              {albumsLoading ? 'Loading albums…' : 'Choose an album'}
+                            </option>
+                            {albums.map((album) => (
+                              <option key={album.id} value={album.id}>
+                                {album.title}
+                              </option>
+                            ))}
+                          </select>
+                        </label>
+                        <label className="text-xs font-semibold text-muted-foreground">
+                          Track Title
+                          <input
+                            placeholder="Track title"
+                            value={trackTitle}
+                            onChange={(event) => setTrackTitle(event.target.value)}
+                            className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                          />
+                        </label>
+                        <label className="text-xs font-semibold text-muted-foreground">
+                          Track Number
+                          <input
+                            placeholder="1"
+                            value={trackNumber}
+                            onChange={(event) => setTrackNumber(event.target.value)}
+                            readOnly={!manualTrackNumber}
+                            className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                          />
+                        </label>
+                      </div>
+                      <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                        <input
+                          type="checkbox"
+                          checked={manualTrackNumber}
+                          onChange={(event) => {
+                            setManualTrackNumber(event.target.checked)
+                          }}
+                          className="h-4 w-4 rounded border-border bg-background"
+                        />
+                        Manually set track number
+                      </label>
+                      <button
+                        type="button"
+                        onClick={handleAddTrack}
+                        disabled={isSaving || !selectedTrackAlbumId}
+                        className="rounded-md border-[3px] border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:brightness-105 disabled:opacity-50"
+                      >
+                        {isSaving ? 'Saving...' : 'Add Track'}
+                      </button>
+                    </>
+                  )}
+                </>
+              )}
+
+              <div className="flex items-center justify-end gap-3 pt-4">
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="rounded-md border-[3px] border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:brightness-105"
+                >
+                  Reset
+                </button>
                 <button
                   type="button"
                   onClick={handleSubmit(
                     isEdit ? handleUpdateArtist : handleSaveArtist,
                   )}
                   disabled={isSaving}
-                  className="rounded-md bg-[var(--encore-accent-cool)] px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
+                  className="rounded-md border-[3px] border-border bg-[var(--encore-accent-warm)] px-4 py-2 text-xs font-extrabold text-white [box-shadow:3px_3px_0_var(--border)] hover:-translate-y-0.5 transition-transform disabled:opacity-60"
                 >
                   {isSaving
                     ? 'Saving...'
                     : isEdit
                       ? 'Update Artist'
-                      : 'Save Artist'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleReset}
-                  className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
-                >
-                  Reset Form
+                      : 'Create Artist'}
                 </button>
               </div>
-              {error && <p className="mt-3 text-xs text-red-400">{error}</p>}
-              {success && (
-                <p className="mt-3 text-xs text-emerald-400">{success}</p>
-              )}
-            </div>
-            )}
-          </section>
-
-          <section className="space-y-4">
-          {isEdit && (
-          <div className="rounded-xl border border-border bg-secondary p-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground">
-                  Albums For Artist
-                </h3>
-                <span className="text-xs text-muted-foreground">
-                  POST /api/{'{artist_id}'}/albums
-                </span>
-              </div>
-              <div className="mt-4 grid gap-3">
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Album Title
-                  </label>
-                  <input
-                    placeholder="Album title"
-                    value={albumTitle}
-                    onChange={(event) => setAlbumTitle(event.target.value)}
-                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Release Date
-                  </label>
-                  <input
-                    type="date"
-                    value={albumReleaseDate}
-                    onChange={(event) => setAlbumReleaseDate(event.target.value)}
-                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                  />
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={handleAddAlbum}
-                  disabled={isSaving}
-                  className="rounded-md bg-[var(--encore-accent-cool)] px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
-                >
-                  {isSaving ? 'Saving...' : 'Add Album'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowAlbums((prev) => !prev)}
-                  className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
-                >
-                  {showAlbums ? 'Hide Albums' : 'Show Albums'}
-                </button>
-              </div>
-              {showAlbums && (
-                <div className="mt-4 space-y-3">
-                  {albumsLoading && (
-                    <p className="text-xs text-muted-foreground">Loading albums…</p>
-                  )}
-                  {!albumsLoading && albums.length === 0 && (
-                    <p className="text-xs text-muted-foreground">No albums yet.</p>
-                  )}
-                  {!albumsLoading &&
-                    albums.map((album) => (
-                      <AlbumCard key={album.id} album={album} />
-                    ))}
-                </div>
-              )}
-            </div>
-            )}
-            {isEdit && (
-            <div className="rounded-xl border border-border bg-secondary p-4">
-              <div className="flex items-center justify-between">
-                <h3 className="text-sm font-semibold text-foreground">
-                  Tracks For Album
-                </h3>
-                <span className="text-xs text-muted-foreground">
-                  POST /api/albums/{'{album_id}'}/tracks
-                </span>
-              </div>
-              <div className="mt-4 grid gap-3">
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Select Album
-                  </label>
-                  <select
-                    value={selectedTrackAlbumId}
-                    onChange={(event) =>
-                      setSelectedTrackAlbumId(event.target.value)
-                    }
-                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                  >
-                    <option value="">
-                      {albumsLoading ? 'Loading albums…' : 'Choose an album'}
-                    </option>
-                    {albums.map((album) => (
-                      <option key={album.id} value={album.id}>
-                        {album.title}
-                      </option>
-                    ))}
-                  </select>
-                  {selectedTrackAlbumId && (
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Selected:{' '}
-                      {albums.find((a) => a.id === selectedTrackAlbumId)?.title ??
-                        ''}
-                    </p>
-                  )}
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Track Title
-                  </label>
-                  <input
-                    placeholder="Track title"
-                    value={trackTitle}
-                    onChange={(event) => setTrackTitle(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter') {
-                        event.preventDefault()
-                        handleAddTrack()
-                      }
-                    }}
-                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                  />
-                </div>
-                <div>
-                  <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                    Track Number
-                  </label>
-                  <input
-                    placeholder="1"
-                    value={trackNumber}
-                    onChange={(event) => setTrackNumber(event.target.value)}
-                    readOnly={!manualTrackNumber}
-                    className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                  />
-                  <p className="mt-1 text-xs text-muted-foreground">
-                    {manualTrackNumber
-                      ? 'Manual override enabled.'
-                      : 'Auto-assigned based on existing tracks.'}
-                  </p>
-                  <label className="mt-2 flex items-center gap-2 text-xs text-muted-foreground">
-                    <input
-                      type="checkbox"
-                      checked={manualTrackNumber}
-                      onChange={(event) => {
-                        setManualTrackNumber(event.target.checked)
-                      }}
-                      className="h-4 w-4 rounded border-border bg-secondary text-[var(--encore-accent-cool)] focus:ring-[var(--encore-accent-cool)]"
-                    />
-                    Manually set track number
-                  </label>
-                </div>
-              </div>
-              <div className="mt-4 flex flex-wrap gap-2">
-                <button
-                  type="button"
-                  onClick={handleAddTrack}
-                  disabled={isSaving || !selectedTrackAlbumId}
-                  className="rounded-md bg-[var(--encore-accent-cool)] px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
-                >
-                  {isSaving ? 'Saving...' : 'Add Track'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setShowTracks((prev) => !prev)}
-                  className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
-                >
-                  {showTracks ? 'Hide Tracks' : 'Show Tracks'}
-                </button>
-              </div>
-              {showTracks && (
-                <div className="mt-4 space-y-2 text-sm">
-                  {tracksLoading && (
-                    <p className="text-xs text-muted-foreground">Loading tracks…</p>
-                  )}
-                  {!tracksLoading && tracks.length === 0 && (
-                    <p className="text-xs text-muted-foreground">No tracks yet.</p>
-                  )}
-                  {!tracksLoading &&
-                    tracks.map((track) => (
-                      <div
-                        key={track.id}
-                        className="flex items-center justify-between rounded-md border border-border/60 bg-card/60 px-3 py-2"
-                      >
-                        <span className="text-foreground">{track.title}</span>
-                        <span className="text-xs text-muted-foreground">
-                          #{track.track_no}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              )}
-            </div>
-            )}
-
-            {isEdit && (
-              <div className="rounded-xl border border-dashed border-border/80 bg-secondary/60 p-4 text-center">
-                <p className="text-xs uppercase tracking-widest text-muted-foreground">
-                  Selected Artist Preview
-                </p>
-                <p className="mt-3 text-sm text-muted-foreground">
-                  {(() => {
-                    const selected = artists.find(
-                      (a) => a.id === selectedArtistId,
-                    )
-                    if (selected) return `${selected.name} · ${selected.genre}`
-                    if (watchedName || watchedGenre) {
-                      return `${watchedName || 'Untitled'} · ${
-                        watchedGenre || 'Unknown'
-                      }`
-                    }
-                    return 'No artist selected'
-                  })()}
-                </p>
-                {(() => {
-                  const selected = artists.find(
-                    (a) => a.id === selectedArtistId,
-                  )
-                  const existingArtwork = resolveAssetUrl(
-                    selected?.artwork_url ?? selected?.image_url ?? '',
-                  )
-                  const previewSrc = artworkPreviewUrl || existingArtwork
-                  if (!previewSrc) return null
-                  return (
-                    <img
-                      src={previewSrc}
-                      alt="Artist artwork preview"
-                      className="mx-auto mt-3 h-28 w-28 rounded-lg object-cover"
-                    />
-                  )
-                })()}
-                <p className="mt-2 text-xs text-muted-foreground">
-                  Drop in artwork and preview URLs to see it here.
-                </p>
-              </div>
-            )}
-
-            {isCreate && (
-              <div className="rounded-xl border border-border bg-secondary p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">
-                    Optional Album + Batch Tracks
-                  </h3>
-                  <span className="text-xs text-muted-foreground">
-                    POST /api/artists/:id/albums + tracks
-                  </span>
-                </div>
-                <label className="mt-4 flex items-center gap-2 text-xs text-muted-foreground">
-                  <input
-                    type="checkbox"
-                    checked={showBatchCreate}
-                    onChange={(event) => setShowBatchCreate(event.target.checked)}
-                    className="h-4 w-4 rounded border-border bg-secondary text-[var(--encore-accent-cool)] focus:ring-[var(--encore-accent-cool)]"
-                  />
-                  Create album and batch tracks now
-                </label>
-                {showBatchCreate && (
-                  <div className="mt-4 grid gap-4 md:grid-cols-2">
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                      Album Title
-                    </label>
-                    <input
-                      placeholder="Album title"
-                      value={albumTitle}
-                      onChange={(event) => setAlbumTitle(event.target.value)}
-                      className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                      Release Date
-                    </label>
-                    <input
-                      type="date"
-                      value={albumReleaseDate}
-                      onChange={(event) =>
-                        setAlbumReleaseDate(event.target.value)
-                      }
-                      className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                    />
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                      Batch Tracks
-                    </label>
-                    <textarea
-                      rows={7}
-                      placeholder="One track per line"
-                      value={batchTracksText}
-                      onChange={(event) => setBatchTracksText(event.target.value)}
-                      className="mt-2 w-full resize-none rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none min-h-[180px]"
-                    />
-                    <p className="mt-1 text-xs text-muted-foreground">
-                      Tracks will be numbered from 1 in order.
-                    </p>
-                  </div>
-                </div>
-                )}
-              </div>
-            )}
-          </section>
+            </>
+          )}
         </div>
       </div>
     </div>

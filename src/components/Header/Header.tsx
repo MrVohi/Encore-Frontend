@@ -3,7 +3,9 @@ import { Link, useNavigate } from '@tanstack/react-router'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { useAuth } from '@/integrations/auth-context'
 import { resolveAssetUrl } from '@/lib/api'
-import { Moon, Sun, UserCircle } from 'lucide-react'
+import { ShoppingBag, Moon, Sun, UserCircle } from 'lucide-react'
+import CartDrawer from '@/components/cart/CartDrawer'
+import { getCart } from '@/services/cart'
 import logo from '@/encore-logo.svg'
 import logoLight from '@/encore-logo-light.svg'
 
@@ -17,6 +19,8 @@ export default function Header({ onSelectArtist }: { onSelectArtist?: (a: any) =
   const [menuOpen, setMenuOpen] = useState(false)
   const [darkMode, setDarkMode] = useState(false)
   const menuRef = useRef<HTMLDivElement | null>(null)
+  const [cartOpen, setCartOpen] = useState(false)
+  const [cartCount, setCartCount] = useState(0)
 
   const initials = useMemo(() => {
     if (!user) return 'U'
@@ -74,6 +78,35 @@ export default function Header({ onSelectArtist }: { onSelectArtist?: (a: any) =
     localStorage.setItem("theme", darkMode ? "dark" : "light")
   }, [darkMode])
 
+  useEffect(() => {
+    let active = true
+    const load = async () => {
+      if (!user) {
+        if (active) setCartCount(0)
+        return
+      }
+      try {
+        const cart = await getCart()
+        const count = Array.isArray(cart.items)
+          ? cart.items.reduce((sum, item) => sum + (item.quantity || 0), 0)
+          : 0
+        if (active) setCartCount(count)
+      } catch {
+        if (active) setCartCount(0)
+      }
+    }
+    load()
+    const handleChange = () => load()
+    const handleOpen = () => setCartOpen(true)
+    window.addEventListener('cart:changed', handleChange as EventListener)
+    window.addEventListener('cart:open', handleOpen as EventListener)
+    return () => {
+      active = false
+      window.removeEventListener('cart:changed', handleChange as EventListener)
+      window.removeEventListener('cart:open', handleOpen as EventListener)
+    }
+  }, [user])
+
   const handleLogout = () => {
     logout()
     navigate({ to: '/login' })
@@ -96,6 +129,21 @@ export default function Header({ onSelectArtist }: { onSelectArtist?: (a: any) =
         </div>
 
         <div className="flex items-center justify-end gap-2" ref={menuRef}>
+          <button
+            type="button"
+            onClick={() => setCartOpen(true)}
+            className="relative inline-flex items-center gap-2 rounded-full border-2 border-border bg-card px-2.5 py-1.5 text-sm font-semibold text-foreground
+              [box-shadow:2px_2px_0_var(--border)] hover:-translate-y-0.5 transition-transform"
+            aria-label="Open cart"
+          >
+            <ShoppingBag className="h-5 w-5" />
+            <span className="hidden sm:inline">Cart</span>
+            {cartCount > 0 && (
+              <span className="absolute -top-2 -right-1 rounded-full bg-[var(--encore-accent-warm)] text-white text-[10px] font-bold px-2 py-0.5 border-2 border-border">
+                {cartCount}
+              </span>
+            )}
+          </button>
           <button
             type="button"
             onClick={() => setDarkMode((v) => !v)}
@@ -178,6 +226,7 @@ export default function Header({ onSelectArtist }: { onSelectArtist?: (a: any) =
       </header>
 
       <Sidebar />
+      <CartDrawer open={cartOpen} onClose={() => setCartOpen(false)} />
     </>
   )
 }

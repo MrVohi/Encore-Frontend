@@ -5,7 +5,7 @@
     border: none;
     box-shadow: none;
     border-radius: 14px;
-    padding: 0;
+    padding: 10px 10px 0 0;
     /* let ConcertCard handle styling */
 }
 
@@ -15,8 +15,15 @@
 
 .encore-map .maplibregl-popup-close-button {
     font-weight: 900;
-    padding: 6px 10px;
+    padding: 4px 8px;
     color: var(--muted-foreground);
+    right: -6px;
+    top: -6px;
+    border-radius: 999px;
+    border: 2px solid var(--border);
+    background: var(--card);
+    line-height: 1;
+    z-index: 3;
 }
 
 .encore-map .maplibregl-popup-close-button:hover {
