@@ -7,13 +7,30 @@ import { useNavigate } from '@tanstack/react-router'
 import { useAuth } from '@/integrations/auth-context'
 import { useEffect, useState } from "react"
 import { Heart } from 'lucide-react'
+import { listTicketTypes } from "@/services/tickets"
+import { addCartItem } from "@/services/cart"
 
 function parseWhen(when: string) {
   const d = new Date(String(when).replace(" ", "T"))
   return Number.isNaN(d.getTime()) ? null : d
 }
 
-function ConcertRow({ c }: { c: Concert }) {
+function formatStatus(value?: string | null) {
+  if (!value) return "Unknown"
+  return String(value)
+    .replace(/_/g, " ")
+    .replace(/\b\w/g, (m) => m.toUpperCase())
+}
+
+function ConcertRow({
+  c,
+  onBuy,
+  buying,
+}: {
+  c: Concert
+  onBuy?: (concertId: string) => void
+  buying?: boolean
+}) {
   const d = c.when ? parseWhen(c.when) : null
 
   return (
@@ -32,7 +49,7 @@ function ConcertRow({ c }: { c: Concert }) {
 
         {/* status pill (optional) */}
         <span className="text-[10px] px-2 py-0.5 rounded-full bg-secondary text-muted-foreground border border-border/30">
-          {c.status}
+          {formatStatus(c.status)}
         </span>
       </div>
 
@@ -43,6 +60,24 @@ function ConcertRow({ c }: { c: Concert }) {
       <div className="text-xs text-muted-foreground mt-1">
         Capacity: <span className="text-card-foreground/80">{c.capacity}</span>
       </div>
+
+      {onBuy && (
+        <div className="mt-3">
+          <button
+            type="button"
+            onClick={() => onBuy(c.id)}
+            disabled={buying}
+            className={[
+              "inline-flex items-center justify-center rounded-full border-[3px] border-border",
+              "px-3 py-1 text-xs font-extrabold",
+              "[box-shadow:2px_2px_0_var(--border)] transition-transform",
+              buying ? "bg-secondary text-muted-foreground" : "bg-[var(--encore-accent-warm)] text-white hover:-translate-y-0.5",
+            ].join(" ")}
+          >
+            {buying ? "Adding…" : "Add to cart"}
+          </button>
+        </div>
+      )}
     </div>
   )
 }
@@ -70,6 +105,8 @@ export default function ArtistBackCard({
   const { user } = useAuth()
   const navigate = useNavigate()
   const [followed, setFollowed] = useState(false)
+  const [buyingId, setBuyingId] = useState<string | null>(null)
+  const [buyError, setBuyError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!user) {
@@ -98,6 +135,27 @@ export default function ArtistBackCard({
       }
     } catch {
       // keep previous state on error
+    }
+  }
+
+  const handleAddToCart = async (concertId: string) => {
+    if (!user) {
+      navigate({ to: "/login" })
+      return
+    }
+    setBuyingId(concertId)
+    setBuyError(null)
+    try {
+      const types = await listTicketTypes(concertId)
+      const ticketTypeId = Array.isArray(types) ? types[0]?.id : undefined
+      if (!ticketTypeId) throw new Error("No ticket types available")
+      await addCartItem({ ticket_type_id: ticketTypeId, quantity: 1 })
+      window.dispatchEvent(new Event('cart:changed'))
+      window.dispatchEvent(new Event('cart:open'))
+    } catch (err: unknown) {
+      setBuyError(err instanceof Error ? err.message : "Failed to add to cart")
+    } finally {
+      setBuyingId(null)
     }
   }
 
@@ -150,11 +208,19 @@ export default function ArtistBackCard({
 
           {concertsLoading && <div className="text-sm text-muted-foreground">Loading concerts…</div>}
           {concertsError && <div className="text-sm text-red-300">Error: {concertsError}</div>}
+          {buyError && <div className="text-sm text-red-300">{buyError}</div>}
 
           {!concertsLoading && !concertsError && (
             <div className="space-y-2">
               {concerts.length ? (
-                concerts.slice(0, 6).map((c) => <ConcertRow key={c.id} c={c} />)
+                concerts.slice(0, 6).map((c) => (
+                  <ConcertRow
+                    key={c.id}
+                    c={c}
+                    onBuy={handleAddToCart}
+                    buying={buyingId === c.id}
+                  />
+                ))
               ) : (
                 <div className="text-sm text-muted-foreground">No concerts</div>
               )}

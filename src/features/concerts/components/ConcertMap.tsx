@@ -12,6 +12,9 @@ import { boundsFromConcerts } from "@/features/concerts/utils/bounds"
 import { parseWhen } from "@/features/concerts/utils/date"
 import { listArtists } from "@/services/artists"
 import { getCachedFollowedArtistIds, loadFollowedArtistIds } from "@/lib/following"
+import { listTicketTypes } from "@/services/tickets"
+import { addCartItem } from "@/services/cart"
+import { useAuth } from "@/integrations/auth-context"
 
 import "@/features/concerts/styles/map.css"
 
@@ -38,6 +41,9 @@ function EncoreMarker({ active }: { active: boolean }) {
 export default function ConcertMap() {
     const { concerts, loading, error } = useConcerts(true)
     const [selected, setSelected] = useState<Concert | null>(null)
+    const { user } = useAuth()
+    const [buyingId, setBuyingId] = useState<string | null>(null)
+    const [buyError, setBuyError] = useState<string | null>(null)
     const [statusFilter, setStatusFilter] = useState("all")
     const [artistFilter, setArtistFilter] = useState("all")
     const [searchQuery, setSearchQuery] = useState("")
@@ -195,6 +201,27 @@ export default function ConcertMap() {
         setToDate("")
     }
 
+    const handleAddToCart = async (concertId: string) => {
+        if (!user) {
+            window.location.href = "/login"
+            return
+        }
+        setBuyingId(concertId)
+        setBuyError(null)
+        try {
+            const types = await listTicketTypes(concertId)
+            const ticketTypeId = Array.isArray(types) ? types[0]?.id : undefined
+            if (!ticketTypeId) throw new Error("No ticket types available")
+            await addCartItem({ ticket_type_id: ticketTypeId, quantity: 1 })
+            window.dispatchEvent(new Event('cart:changed'))
+            window.dispatchEvent(new Event('cart:open'))
+        } catch (err: unknown) {
+            setBuyError(err instanceof Error ? err.message : "Failed to add to cart")
+        } finally {
+            setBuyingId(null)
+        }
+    }
+
     const hasFilters =
         statusFilter !== "all" ||
         artistFilter !== "all" ||
@@ -241,6 +268,9 @@ export default function ConcertMap() {
                             <ConcertCard
                                 concert={selected}
                                 artistName={artistCatalog[String(selected.artist_id)]}
+                                onBuy={handleAddToCart}
+                                buying={buyingId === selected.id}
+                                buyError={buyError}
                             />
                         </Popup>
                     )}

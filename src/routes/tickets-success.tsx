@@ -11,13 +11,13 @@ function TicketsSuccess() {
       <div className="artists-vignette" aria-hidden="true" />
       <div className="relative z-10 w-full max-w-3xl mx-auto px-4 pb-16 space-y-6">
         <section className="rounded-2xl bg-card p-6 shadow-lg border border-border">
-          <h1 className="text-3xl font-bold">Paiement confirmé</h1>
+          <h1 className="text-3xl font-bold">Payment confirmed</h1>
           <p className="text-muted-foreground mt-2">
-            Merci. Tes tickets seront visibles dans ton compte.
+            Thanks. Your tickets will appear in your account shortly.
           </p>
           <div className="mt-6">
             <Button asChild>
-              <Link to="/tickets">Voir mes tickets</Link>
+              <Link to="/tickets">View my tickets</Link>
             </Button>
           </div>
         </section>

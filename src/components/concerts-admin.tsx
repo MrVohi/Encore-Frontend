@@ -287,8 +287,8 @@ export function ConcertAdminModal({
       const authHeader = getAuthHeader()
       const normalizedWhen = form.when
         ? form.when
-            .replace('T', ' ')
-            .replace(/:([0-9]{2})$/, ':$1:00')
+          .replace('T', ' ')
+          .replace(/:([0-9]{2})$/, ':$1:00')
         : form.when
 
       const res = await fetch(`${API_URL}/concerts/${selectedConcertId}`, {
@@ -355,8 +355,12 @@ export function ConcertAdminModal({
   }
 
   const content = (
-    <div className="fixed inset-0 z-[80] flex items-center justify-center bg-black/70 px-4 py-8">
-      <div className="relative w-full max-w-4xl rounded-2xl border border-border bg-transparent text-foreground shadow-2xl admin-modal-surface">
+    <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/70 px-4 py-8">
+      <div
+        className="relative w-full max-w-2xl rounded-2xl border border-border text-foreground shadow-2xl admin-modal-surface"
+        style={{ backgroundColor: 'var(--background)' }}
+      >
+        <div className="admin-modal-backdrop" style={{ backgroundColor: 'var(--background)' }} aria-hidden="true" />
         <div className="flex items-start justify-between border-b border-border px-6 py-4">
           <div>
             <p className="text-xs uppercase tracking-widest text-muted-foreground">
@@ -380,366 +384,293 @@ export function ConcertAdminModal({
           <button
             type="button"
             onClick={onClose}
-            className="rounded-md border border-border bg-secondary px-3 py-1.5 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
+            className="admin-modal-close rounded-md border border-border bg-card px-3 py-1.5 text-xs text-muted-foreground hover:border-[var(--encore-accent-warm)] hover:bg-[var(--encore-accent-warm)] hover:text-white"
           >
             Close
           </button>
         </div>
 
-        <div className="mx-auto max-w-2xl px-6 py-6 max-h-[80vh] overflow-y-auto">
-          <section className="space-y-4">
-            {isEdit && (
-              <div className="rounded-xl border border-border bg-secondary p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">
-                    Edit Existing Concert
-                  </h3>
-                  <span className="text-xs text-muted-foreground">
-                    Load for editing
-                  </span>
-                </div>
-                <div className="mt-4 grid gap-3">
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                      Select Concert
-                    </label>
-                    <select
-                      value={selectedConcertId}
-                      onChange={(event) =>
-                        setSelectedConcertId(event.target.value)
-                      }
-                      className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                    >
-                      <option value="">
-                        {concertsLoading
-                          ? 'Loading concerts…'
-                          : 'Choose a concert'}
-                      </option>
-                      {concerts.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.city} · {c.country}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleLoadConcert}
-                    className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
-                  >
-                    Load Concert
-                  </button>
-                </div>
-              </div>
-            )}
+        <div className="px-6 py-6 space-y-4">
+          {error && <p className="text-xs text-red-400">{error}</p>}
+          {success && <p className="text-xs text-emerald-400">{success}</p>}
 
-            {isDelete && (
-              <div
-                className="rounded-xl border border-destructive/40 bg-secondary p-4"
-                onKeyDown={(event) => {
-                  if (event.key === 'Enter') {
-                    event.preventDefault()
-                    handleDeleteConcert()
-                  }
-                }}
-              >
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-red-700">
-                    Delete Concert
-                  </h3>
-                  <span className="text-xs text-muted-foreground">
-                    Removes related tickets
-                  </span>
-                </div>
-                <div className="mt-4 grid gap-3">
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                      Select Concert
-                    </label>
-                    <select
-                      value={selectedConcertId}
-                      onChange={(event) =>
-                        setSelectedConcertId(event.target.value)
-                      }
-                      className="mt-2 w-full rounded-md border border-destructive/40 bg-[color-mix(in_oklab,var(--card)_82%,var(--background))] px-3 py-2 text-sm text-foreground focus:border-red-400 focus:outline-none"
-                    >
-                      <option value="">
-                        {concertsLoading
-                          ? 'Loading concerts…'
-                          : 'Choose a concert'}
-                      </option>
-                      {concerts.map((c) => (
-                        <option key={c.id} value={c.id}>
-                          {c.city} · {c.country}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                      Type to confirm
-                    </label>
-                    <input
-                      value={deleteConfirm}
-                      onChange={(event) => setDeleteConfirm(event.target.value)}
-                      onKeyDown={(event) => {
-                        if (event.key === 'Enter') {
-                          event.preventDefault()
-                          handleDeleteConcert()
-                        }
-                      }}
-                      placeholder={
-                        selectedConcertId
-                          ? `delete ${
-                              concerts.find((c) => c.id === selectedConcertId)
-                                ?.city ?? ''
-                            } ${
-                              concerts.find((c) => c.id === selectedConcertId)
-                                ?.country ?? ''
-                            } ${
-                              artists.find(
-                                (a) =>
-                                  a.id ===
-                                  concerts.find(
-                                    (c) => c.id === selectedConcertId,
-                                  )?.artist_id,
-                              )?.name ?? ''
-                            }`
-                          : 'delete city country artist'
-                      }
-                      className="mt-2 w-full rounded-md border border-destructive/40 bg-[color-mix(in_oklab,var(--card)_82%,var(--background))] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground/70 focus:border-red-400 focus:outline-none"
-                    />
-                    <div className="mt-1 text-xs text-muted-foreground">
-                      <p>This permanently deletes the concert.</p>
-                      {selectedConcertId && (
-                        <p className="mt-1 text-red-700">
-                          {concerts.find((c) => c.id === selectedConcertId)?.city}{' '}
-                          {concerts.find((c) => c.id === selectedConcertId)
-                            ?.country}{' '}
-                          ·{' '}
-                          {artists.find(
-                            (a) =>
-                              a.id ===
-                              concerts.find((c) => c.id === selectedConcertId)
-                                ?.artist_id,
-                          )?.name ?? 'Unknown artist'}
-                        </p>
-                      )}
-                    </div>
-                  </div>
-                  <button
-                    type="button"
-                    onClick={handleDeleteConcert}
-                    disabled={isSaving}
-                    className="inline-flex items-center justify-center rounded-md border-[3px] border-border bg-red-600 px-4 py-2 text-sm font-extrabold text-white hover:bg-red-700"
+          {isEdit && (
+            <>
+              <div className="grid gap-4">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Select Concert
+                  <select
+                    value={selectedConcertId}
+                    onChange={(event) =>
+                      setSelectedConcertId(event.target.value)
+                    }
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   >
-                    {isSaving ? 'Deleting…' : 'Delete Concert'}
-                  </button>
-                </div>
+                    <option value="">
+                      {concertsLoading
+                        ? 'Loading concerts…'
+                        : 'Choose a concert'}
+                    </option>
+                    {concerts.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.city} · {c.country}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <button
+                  type="button"
+                  onClick={handleLoadConcert}
+                  className="rounded-md border-[3px] border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:brightness-105"
+                >
+                  Load Concert
+                </button>
               </div>
-            )}
+              <div className="border-t border-border my-4" />
+            </>
+          )}
 
-            {!isDelete && (
-              <div className="rounded-xl border border-border bg-secondary p-4">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-foreground">
-                    Concert Details
-                  </h3>
-                  <span className="text-xs text-muted-foreground">
-                    {isEdit
-                      ? 'GET /api/concerts/:id'
-                      : 'POST /api/artists/:id/concerts'}
-                  </span>
-                </div>
-                <div className="mt-4 grid gap-3">
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                        City
-                      </label>
-                      <input
-                        value={form.city}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            city: event.target.value,
-                          }))
-                        }
-                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                        Country
-                      </label>
-                      <div className="mt-2">
-                        <input
-                          list="country-options"
-                          value={form.country}
-                          onChange={(event) =>
-                            setForm((prev) => ({
-                              ...prev,
-                              country: event.target.value.toUpperCase(),
-                            }))
-                          }
-                          placeholder="Start typing or choose country"
-                          className="w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                        />
-                        <datalist id="country-options">
-                          {countryOptions.map((country) => (
-                            <option key={country.code} value={country.code}>
-                              {country.label}
-                            </option>
-                          ))}
-                        </datalist>
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-xs text-muted-foreground">
-                    {isGeocoding && ' Geocoding...'}
+          {isDelete && (
+            <>
+              <div className="grid gap-4">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Select Concert
+                  <select
+                    value={selectedConcertId}
+                    onChange={(event) =>
+                      setSelectedConcertId(event.target.value)
+                    }
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  >
+                    <option value="">
+                      {concertsLoading
+                        ? 'Loading concerts…'
+                        : 'Choose a concert'}
+                    </option>
+                    {concerts.map((c) => (
+                      <option key={c.id} value={c.id}>
+                        {c.city} · {c.country}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Type to confirm
+                  <input
+                    value={deleteConfirm}
+                    onChange={(event) => setDeleteConfirm(event.target.value)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter') {
+                        event.preventDefault()
+                        handleDeleteConcert()
+                      }
+                    }}
+                    placeholder={
+                      selectedConcertId
+                        ? `delete ${concerts.find((c) => c.id === selectedConcertId)
+                          ?.city ?? ''
+                        } ${concerts.find((c) => c.id === selectedConcertId)
+                          ?.country ?? ''
+                        } ${artists.find(
+                          (a) =>
+                            a.id ===
+                            concerts.find(
+                              (c) => c.id === selectedConcertId,
+                            )?.artist_id,
+                        )?.name ?? ''
+                        }`
+                        : 'delete city country artist'
+                    }
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    This permanently deletes the concert.
                   </p>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                        When
-                      </label>
-                      <input
-                        type="datetime-local"
-                        value={form.when}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            when: event.target.value,
-                          }))
-                        }
-                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                        Status
-                      </label>
-                      <select
-                        value={form.status}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            status: event.target.value,
-                          }))
-                        }
-                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                      >
-                        <option value="">Choose a status</option>
-                        <option value="on_sale">On Sale</option>
-                        <option value="sold_out">Sold Out</option>
-                        <option value="ended">Event Ended</option>
-                        <option value="cancelled">Cancelled</option>
-                        <option value="postponed">Postponed</option>
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                        Capacity
-                      </label>
-                      <input
-                        value={form.capacity}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            capacity: event.target.value,
-                          }))
-                        }
-                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                        Artist
-                      </label>
-                      <select
-                        value={form.artist_id}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            artist_id: event.target.value,
-                          }))
-                        }
-                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                      >
-                        <option value="">
-                          {artistsLoading ? 'Loading artists…' : 'Choose an artist'}
-                        </option>
-                        {artists.map((artist) => (
-                          <option key={artist.id} value={artist.id}>
-                            {artist.name}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
-                  </div>
-                  <div className="grid gap-3 sm:grid-cols-2">
-                    <div>
-                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                        Latitude
-                      </label>
-                      <input
-                        value={form.lat}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            lat: event.target.value,
-                          }))
-                        }
-                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-xs uppercase tracking-widest text-muted-foreground">
-                        Longitude
-                      </label>
-                      <input
-                        value={form.lng}
-                        onChange={(event) =>
-                          setForm((prev) => ({
-                            ...prev,
-                            lng: event.target.value,
-                          }))
-                        }
-                        className="mt-2 w-full rounded-md border border-border bg-card px-3 py-2 text-sm text-foreground focus:border-[var(--encore-accent-cool)] focus:outline-none"
-                      />
-                    </div>
-                  </div>
-                </div>
-                <div className="mt-4 flex flex-wrap gap-2">
-                  <button
-                    type="button"
-                    onClick={isEdit ? handleUpdateConcert : handleCreateConcert}
-                    disabled={isSaving}
-                    className="rounded-md bg-[var(--encore-accent-cool)] px-4 py-2 text-xs font-semibold text-white hover:brightness-110"
-                  >
-                    {isSaving
-                      ? 'Saving...'
-                      : isEdit
-                        ? 'Update Concert'
-                        : 'Create Concert'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleReset}
-                    className="rounded-md border border-border bg-card px-4 py-2 text-xs text-muted-foreground hover:border-border hover:bg-secondary"
-                  >
-                    Reset Form
-                  </button>
-                </div>
-                {error && <p className="mt-3 text-xs text-red-400">{error}</p>}
-                {success && (
-                  <p className="mt-3 text-xs text-emerald-400">{success}</p>
-                )}
+                </label>
               </div>
-            )}
-          </section>
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="rounded-md border-[3px] border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:brightness-105"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleDeleteConcert}
+                  disabled={isSaving}
+                  className="rounded-md border-[3px] border-border bg-red-600 px-4 py-2 text-xs font-extrabold text-white [box-shadow:3px_3px_0_var(--border)] hover:bg-red-700 disabled:opacity-60"
+                >
+                  {isSaving ? 'Deleting…' : 'Delete Concert'}
+                </button>
+              </div>
+            </>
+          )}
+
+          {!isDelete && (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Artist
+                  <select
+                    value={form.artist_id}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        artist_id: event.target.value,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  >
+                    <option value="">
+                      {artistsLoading ? 'Loading artists…' : 'Choose an artist'}
+                    </option>
+                    {artists.map((artist) => (
+                      <option key={artist.id} value={artist.id}>
+                        {artist.name}
+                      </option>
+                    ))}
+                  </select>
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  When
+                  <input
+                    type="datetime-local"
+                    value={form.when}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        when: event.target.value,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  City
+                  <input
+                    value={form.city}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        city: event.target.value,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Country
+                  <div className="mt-1">
+                    <input
+                      list="country-options"
+                      value={form.country}
+                      onChange={(event) =>
+                        setForm((prev) => ({
+                          ...prev,
+                          country: event.target.value.toUpperCase(),
+                        }))
+                      }
+                      placeholder="Type or choose"
+                      className="w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                    />
+                    <datalist id="country-options">
+                      {countryOptions.map((country) => (
+                        <option key={country.code} value={country.code}>
+                          {country.label}
+                        </option>
+                      ))}
+                    </datalist>
+                  </div>
+                  {isGeocoding && (
+                    <p className="mt-1 text-xs text-muted-foreground">Geocoding...</p>
+                  )}
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Capacity
+                  <input
+                    value={form.capacity}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        capacity: event.target.value,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Status
+                  <select
+                    value={form.status}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        status: event.target.value,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  >
+                    <option value="">Choose a status</option>
+                    <option value="on_sale">On Sale</option>
+                    <option value="sold_out">Sold Out</option>
+                    <option value="ended">Event Ended</option>
+                    <option value="cancelled">Cancelled</option>
+                    <option value="postponed">Postponed</option>
+                  </select>
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Latitude
+                  <input
+                    value={form.lat}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        lat: event.target.value,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                </label>
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Longitude
+                  <input
+                    value={form.lng}
+                    onChange={(event) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        lng: event.target.value,
+                      }))
+                    }
+                    className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                  />
+                </label>
+              </div>
+
+              <div className="flex items-center justify-end gap-3">
+                <button
+                  type="button"
+                  onClick={handleReset}
+                  className="rounded-md border-[3px] border-border bg-card px-3 py-2 text-xs font-semibold text-foreground hover:brightness-105"
+                >
+                  Reset
+                </button>
+                <button
+                  type="button"
+                  onClick={isEdit ? handleUpdateConcert : handleCreateConcert}
+                  disabled={isSaving}
+                  className="rounded-md border-[3px] border-border bg-[var(--encore-accent-warm)] px-4 py-2 text-xs font-extrabold text-white [box-shadow:3px_3px_0_var(--border)] hover:-translate-y-0.5 transition-transform disabled:opacity-60"
+                >
+                  {isSaving
+                    ? 'Saving...'
+                    : isEdit
+                      ? 'Update Concert'
+                      : 'Create Concert'}
+                </button>
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
