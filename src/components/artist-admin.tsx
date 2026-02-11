@@ -804,30 +804,11 @@ export function ArtistAdminModal({
             </>
           )}
 
-            {!isDelete && (
-              <>
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {isCreate && (
-                    <label className="text-xs font-semibold text-muted-foreground sm:col-span-2">
-                      Artist Name (dropdown)
-                      <select
-                        value={createArtistSeedId}
-                        onChange={(event) => setCreateArtistSeedId(event.target.value)}
-                        className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
-                      >
-                        <option value="">
-                          {artistsLoading ? 'Loading artists…' : 'Choose an artist (optional)'}
-                        </option>
-                        {artists.map((a) => (
-                          <option key={a.id} value={a.id}>
-                            {a.name}
-                          </option>
-                        ))}
-                      </select>
-                    </label>
-                  )}
-                  <label className="text-xs font-semibold text-muted-foreground">
-                    Name
+          {!isDelete && (
+            <>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <label className="text-xs font-semibold text-muted-foreground">
+                  Name
                   <input
                     placeholder="Artist name"
                     {...register('name')}
