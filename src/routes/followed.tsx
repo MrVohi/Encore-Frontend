@@ -5,6 +5,7 @@ import type { Artist } from '@/types/artist'
 import ArtistCard from '@/features/artists/components/ArtistCard'
 import { loadFollowedArtistIds } from '@/lib/following'
 import { listArtists } from '@/services/artists'
+import { setSelectedArtist } from '@/features/artists/state/selected'
 
 export const Route = createFileRoute('/followed')({
   component: Followed,
@@ -131,7 +132,12 @@ function Followed() {
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 px-2 pb-4">
               {followed.map((a, i) => (
                 <div key={a.id} className="px-2">
-                  <ArtistCard artist={a} index={i} variant="record" />
+                  <ArtistCard
+                    artist={a}
+                    index={i}
+                    variant="record"
+                    onClick={() => setSelectedArtist(a)}
+                  />
                 </div>
               ))}
             </div>

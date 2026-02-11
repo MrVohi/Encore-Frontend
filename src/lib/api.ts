@@ -1,11 +1,16 @@
 import axios from 'axios'
 import type { AuthResponse, LoginData, RegisterData, User } from './auth-types'
+import { getApiErrorMessage } from './errors'
 
-const RAW_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').trim()
-const BASE_URL = RAW_BASE_URL.replace(/\/$/, '').replace(/\/api\/?$/, '')
+const RAW_API_BASE_URL = (import.meta.env.VITE_API_BASE_URL ?? '').trim()
+const RAW_BACKEND_BASE_URL = (import.meta.env.VITE_BACKEND_BASE_URL ?? RAW_API_BASE_URL).trim()
+const BACKEND_BASE_URL = RAW_BACKEND_BASE_URL.replace(/\/$/, '').replace(/\/api\/?$/, '')
+const RAW_R2_PUBLIC_BASE_URL = (import.meta.env.VITE_R2_PUBLIC_BASE_URL ?? '').trim()
+const R2_PUBLIC_BASE_URL = RAW_R2_PUBLIC_BASE_URL.replace(/\/$/, '')
+const ASSET_BASE_URL = R2_PUBLIC_BASE_URL || BACKEND_BASE_URL
 
-export const API_URL = BASE_URL ? `${BASE_URL}/api` : '/api'
-export const API_ORIGIN = BASE_URL
+export const API_URL = BACKEND_BASE_URL ? `${BACKEND_BASE_URL}/api` : '/api'
+export const API_ORIGIN = BACKEND_BASE_URL
 
 export const resolveAssetUrl = (value?: string | null) => {
   const raw = String(value ?? "").trim()
@@ -14,13 +19,21 @@ export const resolveAssetUrl = (value?: string | null) => {
 
   try {
     const u = new URL(raw)
-    if (u.pathname.startsWith("/uploads/")) return u.pathname + u.search
+    if (u.pathname.startsWith("/uploads/")) {
+      return ASSET_BASE_URL ? `${ASSET_BASE_URL}${u.pathname}${u.search}` : u.pathname + u.search
+    }
+    return raw
   } catch { }
 
   if (/^https?:\/\//i.test(raw)) return raw
 
-  if (API_ORIGIN) return raw.startsWith("/") ? `${API_ORIGIN}${raw}` : `${API_ORIGIN}/${raw}`
-  return raw.startsWith("/") ? raw : `/${raw}`
+  const normalized = raw.startsWith("/") ? raw : `/${raw}`
+  if (normalized.startsWith("/uploads/")) {
+    return ASSET_BASE_URL ? `${ASSET_BASE_URL}${normalized}` : normalized
+  }
+
+  if (ASSET_BASE_URL) return `${ASSET_BASE_URL}${normalized}`
+  return normalized
 }
 
 
@@ -72,6 +85,11 @@ api.interceptors.response.use(
         window.location.href = '/login'
         return Promise.reject(refreshError)
       }
+    }
+
+    const message = getApiErrorMessage(error?.response?.data, error?.message)
+    if (message && typeof error === 'object') {
+      error.message = message
     }
 
     return Promise.reject(error)

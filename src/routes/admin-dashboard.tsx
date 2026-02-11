@@ -2,7 +2,7 @@ import { type Artist } from '@/components/artist'
 import { ArtistAdminModal } from '@/components/artist-admin'
 import { ConcertAdminModal } from '@/components/concerts-admin'
 import { createFileRoute, useNavigate } from '@tanstack/react-router'
-import { Fragment, useEffect, useMemo, useState } from 'react'
+import { Fragment, useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useAuth } from '@/integrations/auth-context'
 import { API_URL } from '@/lib/api'
@@ -35,7 +35,8 @@ type AdminTicket = {
   status?: string
   issued_at?: string
   ticket_type_id?: string
-  order_id?: string
+  ticket_type?: string
+  price?: number | string
 }
 
 type TicketStats = {
@@ -91,15 +92,18 @@ function RouteComponent() {
   const [ticketStatsError, setTicketStatsError] = useState<string | null>(null)
   const [ticketModalOpen, setTicketModalOpen] = useState(false)
   const [ticketModalMode, setTicketModalMode] = useState<'create' | 'edit'>('create')
+  const [ticketModalSource, setTicketModalSource] = useState<'tickets' | 'user'>('tickets')
+  const ticketFormRef = useRef<HTMLFormElement | null>(null)
   const [ticketNotice, setTicketNotice] = useState<string | null>(null)
   const [ticketActionLoading, setTicketActionLoading] = useState(false)
   const [ticketForm, setTicketForm] = useState({
     id: '',
+    user_id: '',
     concert_id: '',
-    seat: 'GA',
-    status: 'issued',
+    seat: '',
+    status: '',
     ticket_type_id: '',
-    order_id: '',
+    price: '',
   })
   const [ticketConcerts, setTicketConcerts] = useState<
     Array<{ id: string; artist?: string; city?: string; country?: string; when?: string }>
@@ -398,16 +402,18 @@ function RouteComponent() {
       .replace(/\b\w/g, (m) => m.toUpperCase())
   }
 
-  const openTicketModal = (mode: 'create' | 'edit', ticket?: AdminTicket) => {
+  const openTicketModal = (mode: 'create' | 'edit', ticket?: AdminTicket, userId?: string) => {
     setTicketNotice(null)
     setTicketModalMode(mode)
+    setTicketModalSource(userId ? 'user' : 'tickets')
     setTicketForm({
       id: ticket?.id ?? '',
+      user_id: userId ?? ticket?.user_id ?? '',
       concert_id: ticket?.concert_id ?? '',
-      seat: ticket?.seat ?? 'GA',
-      status: ticket?.status ?? 'issued',
-      ticket_type_id: ticket?.ticket_type_id ?? '',
-      order_id: ticket?.order_id ?? '',
+      seat: ticket?.seat ?? '',
+      status: ticket?.status ?? '',
+      ticket_type_id: ticket?.ticket_type_id ?? ticket?.ticket_type ?? '',
+      price: ticket?.price ? String(ticket.price) : '',
     })
     setTicketModalOpen(true)
   }
@@ -421,9 +427,13 @@ function RouteComponent() {
   }
 
   const handleCreateTicket = async () => {
+    if (ticketFormRef.current && !ticketFormRef.current.reportValidity()) return
     setTicketActionLoading(true)
     setTicketNotice(null)
     try {
+      const priceValue = ticketForm.price.trim()
+      const parsedPrice = Number(priceValue)
+      const price = priceValue && Number.isFinite(parsedPrice) ? parsedPrice : undefined
       const res = await fetch(`${API_URL}/tickets/admin`, {
         method: 'POST',
         headers: {
@@ -431,11 +441,13 @@ function RouteComponent() {
           ...getAuthHeader(),
         },
         body: JSON.stringify({
+          user_id:
+            ticketModalSource === 'user' ? ticketForm.user_id.trim() || undefined : undefined,
           concert_id: ticketForm.concert_id.trim(),
-          seat: ticketForm.seat.trim(),
-          status: ticketForm.status.trim(),
+          seat: ticketModalSource === 'user' ? ticketForm.seat.trim() || undefined : undefined,
+          status: ticketModalSource === 'user' ? ticketForm.status.trim() || undefined : undefined,
           ticket_type_id: ticketForm.ticket_type_id.trim() || undefined,
-          order_id: ticketForm.order_id.trim() || undefined,
+          price,
         }),
       })
       if (!res.ok) throw new Error('Failed to create ticket')
@@ -451,9 +463,13 @@ function RouteComponent() {
 
   const handleUpdateTicket = async () => {
     if (!ticketForm.id) return
+    if (ticketFormRef.current && !ticketFormRef.current.reportValidity()) return
     setTicketActionLoading(true)
     setTicketNotice(null)
     try {
+      const priceValue = ticketForm.price.trim()
+      const parsedPrice = Number(priceValue)
+      const price = priceValue && Number.isFinite(parsedPrice) ? parsedPrice : undefined
       const res = await fetch(`${API_URL}/tickets/admin/${ticketForm.id}`, {
         method: 'PATCH',
         headers: {
@@ -461,11 +477,13 @@ function RouteComponent() {
           ...getAuthHeader(),
         },
         body: JSON.stringify({
+          user_id:
+            ticketModalSource === 'user' ? ticketForm.user_id.trim() || undefined : undefined,
           concert_id: ticketForm.concert_id.trim(),
-          seat: ticketForm.seat.trim(),
-          status: ticketForm.status.trim(),
+          seat: ticketModalSource === 'user' ? ticketForm.seat.trim() || undefined : undefined,
+          status: ticketModalSource === 'user' ? ticketForm.status.trim() || undefined : undefined,
           ticket_type_id: ticketForm.ticket_type_id.trim() || undefined,
-          order_id: ticketForm.order_id.trim() || undefined,
+          price,
         }),
       })
       if (!res.ok) throw new Error('Failed to update ticket')
@@ -956,12 +974,12 @@ function RouteComponent() {
                           <div className="text-xs text-muted-foreground">
                             {ticket.when ? new Date(ticket.when).toLocaleString() : 'Unknown date'} · {ticket.city ?? '—'}, {ticket.country ?? '—'}
                           </div>
-                          <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
-                            <span>User: {ticket.user_email ?? ticket.user_id}</span>
-                            <span>Seat: {ticket.seat ?? 'GA'}</span>
-                            <span>Type: {ticket.ticket_type_id ?? '—'}</span>
-                            <span>Order: {ticket.order_id ?? '—'}</span>
-                          </div>
+                <div className="mt-1 flex flex-wrap gap-2 text-[11px] text-muted-foreground">
+                  <span>User: {ticket.user_email ?? ticket.user_id}</span>
+                  <span>Seat: {ticket.seat ?? '—'}</span>
+                  <span>Type: {ticket.ticket_type_id ?? ticket.ticket_type ?? '—'}</span>
+                  <span>Price: {ticket.price ?? '—'}</span>
+                </div>
                         </div>
                         <div className="flex items-center gap-2">
                           <span className="rounded-full border border-border bg-card px-2 py-0.5 text-[10px] font-semibold text-muted-foreground">
@@ -1167,9 +1185,21 @@ function RouteComponent() {
                                       </button>
                                     )}
                                     {userModalMode === 'tickets' && (
-                                      <span className="text-xs text-muted-foreground">
-                                        {userTickets.length} tickets
-                                      </span>
+                                      <div className="flex flex-wrap items-center gap-2">
+                                        <button
+                                          type="button"
+                                          onClick={() => {
+                                            closeUserModal()
+                                            openTicketModal('create', undefined, user.id)
+                                          }}
+                                          className="rounded-md border-[3px] border-border bg-card px-3 py-1 text-xs font-semibold text-foreground hover:brightness-105"
+                                        >
+                                          Add ticket
+                                        </button>
+                                        <span className="text-xs text-muted-foreground">
+                                          {userTickets.length} tickets
+                                        </span>
+                                      </div>
                                     )}
                                   </div>
                                 </td>
@@ -1184,17 +1214,28 @@ function RouteComponent() {
                                             key={ticket.id}
                                             className="rounded-md border border-border bg-card px-3 py-2 text-xs text-muted-foreground"
                                           >
-                                            <div className="text-foreground font-semibold">
-                                              {ticket.artist ?? 'Unknown artist'}
-                                            </div>
-                                            <div>
-                                              {ticket.city ?? '—'} {ticket.country ?? ''}
-                                            </div>
-                                            {ticket.when && (
+                                            <div className="flex items-start justify-between gap-2">
                                               <div>
-                                                {new Date(ticket.when).toLocaleString()}
+                                                <div className="text-foreground font-semibold">
+                                                  {ticket.artist ?? 'Unknown artist'}
+                                                </div>
+                                                <div>
+                                                  {ticket.city ?? '—'} {ticket.country ?? ''}
+                                                </div>
+                                                {ticket.when && (
+                                                  <div>
+                                                    {new Date(ticket.when).toLocaleString()}
+                                                  </div>
+                                                )}
                                               </div>
-                                            )}
+                                              <button
+                                                type="button"
+                                                onClick={() => handleDeleteTicket(ticket.id)}
+                                                className="rounded-md border border-border bg-red-600 px-2 py-1 text-[10px] font-semibold text-white hover:bg-red-700"
+                                              >
+                                                Remove
+                                              </button>
+                                            </div>
                                           </div>
                                         ))}
                                       </div>
@@ -1243,7 +1284,9 @@ function RouteComponent() {
                   </h2>
                   <p className="mt-1 text-sm text-muted-foreground">
                     {ticketModalMode === 'create'
-                      ? 'Issue a ticket manually for a user.'
+                      ? ticketModalSource === 'user'
+                        ? 'Assign a ticket to this user.'
+                        : 'Create a ticket for a concert.'
                       : 'Update ticket details.'}
                   </p>
                 </div>
@@ -1256,12 +1299,42 @@ function RouteComponent() {
                 </button>
               </div>
 
-              <div className="px-6 py-6 space-y-4">
+              <form
+                ref={ticketFormRef}
+                className="px-6 py-6 space-y-4"
+                onSubmit={(e) => e.preventDefault()}
+              >
                 {ticketNotice && (
                   <p className="text-xs text-red-400">{ticketNotice}</p>
                 )}
 
                 <div className="grid gap-4 sm:grid-cols-2">
+                  {ticketModalSource === 'user' && (
+                    <label className="text-xs font-semibold text-muted-foreground sm:col-span-2">
+                      User
+                      <select
+                        value={ticketForm.user_id}
+                        onChange={(e) =>
+                          setTicketForm((prev) => ({
+                            ...prev,
+                            user_id: e.target.value,
+                          }))
+                        }
+                        disabled
+                        required
+                        className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground disabled:opacity-70"
+                      >
+                        <option value="">
+                          {usersLoading ? 'Loading users…' : 'Choose a user'}
+                        </option>
+                        {usersWithFlags.map((u) => (
+                          <option key={u.id} value={u.id}>
+                            {u.username || u.email || u.id}
+                          </option>
+                        ))}
+                      </select>
+                    </label>
+                  )}
                   <label className="text-xs font-semibold text-muted-foreground sm:col-span-2">
                     Concert
                     <select
@@ -1272,6 +1345,7 @@ function RouteComponent() {
                           concert_id: e.target.value,
                         }))
                       }
+                      required
                       className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                     >
                       <option value="">
@@ -1299,37 +1373,57 @@ function RouteComponent() {
                     )}
                   </label>
                   <label className="text-xs font-semibold text-muted-foreground">
-                    Seat
-                    <input
-                      value={ticketForm.seat}
-                      onChange={(e) => setTicketForm((prev) => ({ ...prev, seat: e.target.value }))}
-                      className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
-                    />
-                  </label>
-                  <label className="text-xs font-semibold text-muted-foreground">
-                    Status
-                    <input
-                      value={ticketForm.status}
-                      onChange={(e) => setTicketForm((prev) => ({ ...prev, status: e.target.value }))}
-                      className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
-                    />
-                  </label>
-                  <label className="text-xs font-semibold text-muted-foreground">
-                    Order ID
-                    <input
-                      value={ticketForm.order_id}
-                      onChange={(e) => setTicketForm((prev) => ({ ...prev, order_id: e.target.value }))}
-                      className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
-                    />
-                  </label>
-                  <label className="text-xs font-semibold text-muted-foreground">
-                    Ticket Type ID
+                    Ticket Type
                     <input
                       value={ticketForm.ticket_type_id}
-                      onChange={(e) => setTicketForm((prev) => ({ ...prev, ticket_type_id: e.target.value }))}
+                      onChange={(e) =>
+                        setTicketForm((prev) => ({ ...prev, ticket_type_id: e.target.value }))
+                      }
+                      required
+                      list="ticket-type-options"
+                      placeholder="Standard, VIP, Deluxe..."
+                      className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                    />
+                    <datalist id="ticket-type-options">
+                      <option value="Standard" />
+                      <option value="VIP" />
+                      <option value="Deluxe" />
+                    </datalist>
+                  </label>
+                  <label className="text-xs font-semibold text-muted-foreground">
+                    Price
+                    <input
+                      type="number"
+                      step="0.01"
+                      value={ticketForm.price}
+                      onChange={(e) => setTicketForm((prev) => ({ ...prev, price: e.target.value }))}
+                      required
+                      placeholder="0.00"
                       className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                     />
                   </label>
+                  {ticketModalSource === 'user' && (
+                    <>
+                      <label className="text-xs font-semibold text-muted-foreground">
+                        Seat
+                        <input
+                          value={ticketForm.seat}
+                          onChange={(e) => setTicketForm((prev) => ({ ...prev, seat: e.target.value }))}
+                          placeholder="GA or A12"
+                          className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                        />
+                      </label>
+                      <label className="text-xs font-semibold text-muted-foreground">
+                        Status
+                        <input
+                          value={ticketForm.status}
+                          onChange={(e) => setTicketForm((prev) => ({ ...prev, status: e.target.value }))}
+                          placeholder="issued, used..."
+                          className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
+                        />
+                      </label>
+                    </>
+                  )}
                 </div>
 
                 <div className="flex items-center justify-end gap-3">
@@ -1349,7 +1443,7 @@ function RouteComponent() {
                     {ticketModalMode === 'create' ? 'Create' : 'Update'}
                   </button>
                 </div>
-              </div>
+              </form>
             </div>
           </div>,
           document.body,

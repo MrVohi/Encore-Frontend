@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { useForm } from 'react-hook-form'
 import { z } from 'zod'
@@ -146,6 +146,10 @@ export function ArtistAdminModal({
   const [artworkPreviewUrl, setArtworkPreviewUrl] = useState<string | null>(
     null,
   )
+  const artistFormRef = useRef<HTMLFormElement | null>(null)
+  const albumTitleRef = useRef<HTMLInputElement | null>(null)
+  const albumReleaseRef = useRef<HTMLInputElement | null>(null)
+  const trackTitleRef = useRef<HTMLInputElement | null>(null)
 
   useEffect(() => {
     if (!artworkFile) {
@@ -608,6 +612,8 @@ export function ArtistAdminModal({
       setError('Create an artist first.')
       return
     }
+    if (albumTitleRef.current && !albumTitleRef.current.reportValidity()) return
+    if (albumReleaseRef.current && !albumReleaseRef.current.reportValidity()) return
 
     setIsSaving(true)
     setError(null)
@@ -646,6 +652,7 @@ export function ArtistAdminModal({
       setError('Select an album before adding tracks.')
       return
     }
+    if (trackTitleRef.current && !trackTitleRef.current.reportValidity()) return
 
     setIsSaving(true)
     setError(null)
@@ -703,7 +710,11 @@ export function ArtistAdminModal({
           </button>
         </div>
 
-        <div className="px-6 py-6 space-y-4 max-h-[70vh] overflow-y-auto">
+        <form
+          ref={artistFormRef}
+          className="px-6 py-6 space-y-4 max-h-[70vh] overflow-y-auto"
+          onSubmit={(e) => e.preventDefault()}
+        >
           {error && <p className="text-xs text-red-400">{error}</p>}
           {success && <p className="text-xs text-emerald-400">{success}</p>}
 
@@ -812,6 +823,7 @@ export function ArtistAdminModal({
                   <input
                     placeholder="Artist name"
                     {...register('name')}
+                    required
                     className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
                   {errors.name && (
@@ -825,6 +837,7 @@ export function ArtistAdminModal({
                   <input
                     placeholder="Genre"
                     {...register('genre')}
+                    required
                     className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
                   {errors.genre && (
@@ -913,8 +926,10 @@ export function ArtistAdminModal({
                         Album Title
                         <input
                           placeholder="Album title"
+                          ref={albumTitleRef}
                           value={albumTitle}
                           onChange={(event) => setAlbumTitle(event.target.value)}
+                          required
                           className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                         />
                       </label>
@@ -922,10 +937,12 @@ export function ArtistAdminModal({
                         Release Date
                         <input
                           type="date"
+                          ref={albumReleaseRef}
                           value={albumReleaseDate}
                           onChange={(event) =>
                             setAlbumReleaseDate(event.target.value)
                           }
+                          required
                           className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                         />
                       </label>
@@ -952,8 +969,10 @@ export function ArtistAdminModal({
                       Album Title
                       <input
                         placeholder="Album title"
+                        ref={albumTitleRef}
                         value={albumTitle}
                         onChange={(event) => setAlbumTitle(event.target.value)}
+                        required
                         className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                       />
                     </label>
@@ -961,8 +980,10 @@ export function ArtistAdminModal({
                       Release Date
                       <input
                         type="date"
+                        ref={albumReleaseRef}
                         value={albumReleaseDate}
                         onChange={(event) => setAlbumReleaseDate(event.target.value)}
+                        required
                         className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                       />
                     </label>
@@ -1010,8 +1031,10 @@ export function ArtistAdminModal({
                           Track Title
                           <input
                             placeholder="Track title"
+                            ref={trackTitleRef}
                             value={trackTitle}
                             onChange={(event) => setTrackTitle(event.target.value)}
+                            required
                             className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                           />
                         </label>
@@ -1062,6 +1085,14 @@ export function ArtistAdminModal({
                   type="button"
                   onClick={handleSubmit(
                     isEdit ? handleUpdateArtist : handleSaveArtist,
+                    (formErrors) => {
+                      if (artistFormRef.current) {
+                        artistFormRef.current.reportValidity()
+                      }
+                      if (formErrors.name || formErrors.genre) {
+                        setError('Please complete required fields.')
+                      }
+                    },
                   )}
                   disabled={isSaving}
                   className="rounded-md border-[3px] border-border bg-[var(--encore-accent-warm)] px-4 py-2 text-xs font-extrabold text-white [box-shadow:3px_3px_0_var(--border)] hover:-translate-y-0.5 transition-transform disabled:opacity-60"
@@ -1075,7 +1106,7 @@ export function ArtistAdminModal({
               </div>
             </>
           )}
-        </div>
+        </form>
       </div>
     </div>
   )

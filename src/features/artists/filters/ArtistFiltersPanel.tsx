@@ -7,7 +7,7 @@ type Props = {
     onClose: () => void
 }
 
-const GENRES = ["all", "rock", "pop", "jazz"] as const
+const GENRES = ["all", "rock", "pop", "jazz", "hip hop", "electronic", "r&b"] as const
 
 const ORDERS: Array<{ value: ArtistOrder; label: string }> = [
     { value: "created_at_desc", label: "Newest" },
@@ -114,9 +114,26 @@ export default function ArtistFiltersPanel({
                         </div>
                     </section>
 
-                    {/* Genre chips (like sample) */}
+                    {/* Genre */}
                     <section className={brutalCard}>
                         <div className={sectionTitle}>Genre</div>
+                        <div className="relative">
+                            <input
+                                value={genre}
+                                onChange={(e) => {
+                                    const next = e.target.value
+                                    setGenre(next.toLowerCase() === "all" ? "all" : next)
+                                }}
+                                placeholder="Type or choose genre…"
+                                list="artist-genre-options"
+                                className="artists-filter-input"
+                            />
+                            <datalist id="artist-genre-options">
+                                {GENRES.map((g) => (
+                                    <option key={g} value={g} />
+                                ))}
+                            </datalist>
+                        </div>
                         <div className="artists-filter-chips">
                             {GENRES.map((g) => (
                                 <button

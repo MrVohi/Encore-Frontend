@@ -31,17 +31,19 @@ export default function ConcertCard({
 
   return (
     <div className="bg-card text-card-foreground border-[3px] border-border rounded-xl p-3 [box-shadow:4px_4px_0_var(--border)]">
-      <div className="flex items-start justify-between gap-3 pr-8">
-        <div className="font-extrabold">
-          {concert.city} — {concert.country}
+      <div className="flex items-center justify-between gap-3">
+        <div className="min-w-0">
+          <div className="font-extrabold">
+            {concert.city} — {concert.country}
+          </div>
+          {artistName ? <div className="text-sm font-semibold text-foreground/80">{artistName}</div> : null}
+          <div className="text-sm text-muted-foreground">{date}</div>
+          <div className="text-sm text-muted-foreground">Capacity: {concert.capacity}</div>
         </div>
-        <span className={`inline-flex rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold ${statusClass}`}>
+        <span className={`inline-flex shrink-0 rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold ${statusClass}`}>
           {statusLabel}
         </span>
       </div>
-      {artistName ? <div className="text-sm font-semibold text-foreground/80">{artistName}</div> : null}
-      <div className="text-sm text-muted-foreground">{date}</div>
-      <div className="text-sm text-muted-foreground">Capacity: {concert.capacity}</div>
 
       {onBuy && (
         <div className="mt-2 flex items-center gap-2">

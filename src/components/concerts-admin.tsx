@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { API_URL } from '@/lib/api'
 
@@ -40,6 +40,12 @@ export function ConcertAdminModal({
   const [isGeocoding, setIsGeocoding] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState<string | null>(null)
+  const artistNameById = useMemo(() => {
+    const map = new Map<string, string>()
+    artists.forEach((a) => map.set(String(a.id), String(a.name)))
+    return map
+  }, [artists])
+  const formRef = useRef<HTMLFormElement | null>(null)
 
   const getAuthHeader = () => {
     const token = localStorage.getItem('access_token')
@@ -235,6 +241,7 @@ export function ConcertAdminModal({
   if (!open) return null
 
   const handleCreateConcert = async () => {
+    if (formRef.current && !formRef.current.reportValidity()) return
     setIsSaving(true)
     setError(null)
     setSuccess(null)
@@ -278,6 +285,7 @@ export function ConcertAdminModal({
       setError('Select a concert to update.')
       return
     }
+    if (formRef.current && !formRef.current.reportValidity()) return
 
     setIsSaving(true)
     setError(null)
@@ -390,7 +398,7 @@ export function ConcertAdminModal({
           </button>
         </div>
 
-        <div className="px-6 py-6 space-y-4">
+        <form ref={formRef} className="px-6 py-6 space-y-4" onSubmit={(e) => e.preventDefault()}>
           {error && <p className="text-xs text-red-400">{error}</p>}
           {success && <p className="text-xs text-emerald-400">{success}</p>}
 
@@ -411,11 +419,21 @@ export function ConcertAdminModal({
                         ? 'Loading concerts…'
                         : 'Choose a concert'}
                     </option>
-                    {concerts.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.city} · {c.country}
-                      </option>
-                    ))}
+                    {concerts.map((c) => {
+                      const artistName = artistNameById.get(String(c.artist_id))
+                      const label = [
+                        artistName ? `${artistName}` : null,
+                        c.city,
+                        c.country,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
+                      return (
+                        <option key={c.id} value={c.id}>
+                          {label}
+                        </option>
+                      )
+                    })}
                   </select>
                 </label>
                 <button
@@ -447,11 +465,21 @@ export function ConcertAdminModal({
                         ? 'Loading concerts…'
                         : 'Choose a concert'}
                     </option>
-                    {concerts.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {c.city} · {c.country}
-                      </option>
-                    ))}
+                    {concerts.map((c) => {
+                      const artistName = artistNameById.get(String(c.artist_id))
+                      const label = [
+                        artistName ? `${artistName}` : null,
+                        c.city,
+                        c.country,
+                      ]
+                        .filter(Boolean)
+                        .join(' · ')
+                      return (
+                        <option key={c.id} value={c.id}>
+                          {label}
+                        </option>
+                      )
+                    })}
                   </select>
                 </label>
                 <label className="text-xs font-semibold text-muted-foreground">
@@ -521,6 +549,7 @@ export function ConcertAdminModal({
                         artist_id: event.target.value,
                       }))
                     }
+                    required
                     className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   >
                     <option value="">
@@ -544,6 +573,7 @@ export function ConcertAdminModal({
                         when: event.target.value,
                       }))
                     }
+                    required
                     className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
                 </label>
@@ -557,6 +587,7 @@ export function ConcertAdminModal({
                         city: event.target.value,
                       }))
                     }
+                    required
                     className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
                 </label>
@@ -572,6 +603,7 @@ export function ConcertAdminModal({
                           country: event.target.value.toUpperCase(),
                         }))
                       }
+                      required
                       placeholder="Type or choose"
                       className="w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                     />
@@ -597,6 +629,7 @@ export function ConcertAdminModal({
                         capacity: event.target.value,
                       }))
                     }
+                    required
                     className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
                 </label>
@@ -610,6 +643,7 @@ export function ConcertAdminModal({
                         status: event.target.value,
                       }))
                     }
+                    required
                     className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   >
                     <option value="">Choose a status</option>
@@ -630,6 +664,7 @@ export function ConcertAdminModal({
                         lat: event.target.value,
                       }))
                     }
+                    required
                     className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
                 </label>
@@ -643,6 +678,7 @@ export function ConcertAdminModal({
                         lng: event.target.value,
                       }))
                     }
+                    required
                     className="mt-1 w-full rounded-md border-[3px] border-border bg-background px-3 py-2 text-sm text-foreground"
                   />
                 </label>
@@ -671,7 +707,7 @@ export function ConcertAdminModal({
               </div>
             </>
           )}
-        </div>
+        </form>
       </div>
     </div>
   )
